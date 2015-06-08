@@ -1,0 +1,205 @@
+var cordova = require('cordova'),
+channel = require('cordova/channel');
+var Easemob =function(){};
+/**
+ * 登录（绑定监听事件）
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @param  {Array} params     [user,password]
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.login = function(success,error,params) {
+    cordova.exec(success,error,'Easemob','login',params);
+};
+/**
+ * 登出（取消绑定监听事件）
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.logout = function(success,error) {
+    cordova.exec(success,error,'Easemob','logout',params);
+};
+/**
+ * 发聊天
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @param  {Array} params     [chatType,target,contentType,content]
+ *                              chatType:消息类型，single(默认),group
+                                target:目标用户的用户名或群的id
+                                contentType:消息内容的类型：TXT，VOICE，IMAGE（LOCATION，FILE。。未实现）
+                                content 消息内容
+                                    TXT：{text:"内容"}，
+                                    VOICE：{filePath:"xxx.amr",len:3}，len为语音的秒数，filePath为文件路径
+                                    IMAGE：{filePath:"xxx.jpg"}，filePath为文件路径
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.chat = function(success,error,params) {
+    cordova.exec(success,error,'Easemob','chat',params);
+};
+/**
+ * 开始录音
+ * @param  {Array} params  [target]目标用户的用户名或群的id
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.recordStart = function(params) {
+    cordova.exec(null,null,'Easemob','recordstart',params);
+};
+/**
+ * 停止录音并发送消息
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @param  {Array} params  [chatType, target]
+ *                             chatType:消息类型，single(默认),group
+                               target:目标用户的用户名或群的id
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.recordEnd = function(success,error,params) {
+    cordova.exec(success,error,'Easemob','recordend',params);
+};
+/**
+ * 取消录音
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.recordCancel = function(success,error) {
+    cordova.exec(success,error,'Easemob','recordcancel',params);
+};
+/**
+ * 获取聊天记录
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @param  {Array} params  [chatType，target,[startMsgId]]
+ *                             chatType:消息类型，single(默认),group
+                               target:目标用户的用户名或群的id
+                               startMsgId:可选，如果存在则为获取比该消息更早的20条记录，否则为获取最新的20条记录
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.getMessages = function(success,error,params) {
+    cordova.exec(success,error,'Easemob','getMessages',params);
+};
+//TODO:
+/**
+ * 获取未读消息数
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @param  {Array} params  [target]
+                               target:目标用户的用户名或群的id
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.getUnreadMsgCount = function(success,error,params) {
+    cordova.exec(success,error,'Easemob','getUnreadMsgCount',params);
+};
+/**
+ * 清零未读消息数
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @param  {Array} params  [target]
+                               target:目标用户的用户名或群的id，不存在则清零所有回话的未读消息
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.resetUnreadMsgCount = function(success,error,params) {
+    cordova.exec(success,error,'Easemob','resetUnreadMsgCount',params);
+};
+/**
+ * 获取消息总数
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @param  {Array} params  [target]
+                               target:目标用户的用户名或群的id
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.getMsgCount = function(success,error,params) {
+    cordova.exec(success,error,'Easemob','getMsgCount',params);
+};
+/**
+ * 清空会话聊天记录
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @param  {Array} params  [target，msgId]
+                               target:目标用户的用户名或群的id
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.deleteConversations = function(success,error,params) {
+    cordova.exec(success,error,'Easemob','clearConversation',params);
+};
+/**
+ * 删除会话某条聊天记录
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @param  {Array} params  [target，msgId]
+                               target:目标用户的用户名或群的id
+                               msgId:可选，如果存在则为删除某一条
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.deleteConversation = function(success,error,params) {
+    cordova.exec(success,error,'Easemob','deleteConversation',params);
+};
+//删除所有回话记录（比较恐怖，还是不加了吧）
+// Easemob.prototype.deleteAllConversation = function(success,error,params) {
+//     cordova.exec(success,error,'Easemob','deleteAllConversation',params);
+// };
+/**
+ * 获取群聊列表
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @param  {[type]} params  [serverFlag]是否从服务器上获取
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.getGroups = function(success,error,params) {
+    cordova.exec(success,error,'Easemob','getGroups',params);
+};
+/**
+ * 获取群聊信息
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @param  {[type]} params  [groupId,serverFlag]群聊id,是否从服务器上获取
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.getGroup = function(success,error,params) {
+    cordova.exec(success,error,'Easemob','getGroup',params);
+};
+/**
+ * 接收消息处理函数
+ * @param  {[type]} chat 收到的chat,一条或者多条
+ * @return {[type]}      [description]
+ */
+Easemob.prototype.onReciveMessage = function (chat) {
+}
+/**
+ * 点击消息提示框函数
+ * @param  {[type]} chat 收到的chat,一条或者多条
+ * @return {[type]}      [description]
+ */
+Easemob.prototype.onClickNotification = function (chat) {
+}
+/**
+ * 录音时的函数
+ * @param  {[type]} chat 收到的chat,一条或者多条
+ * @return {[type]}      [description]
+ */
+Easemob.prototype.onRecord = function (msg) {
+}
+var easemob = new Easemob();
+channel.onCordovaReady.subscribe( function () {
+    // The cordova device plugin is ready now
+    channel.onCordovaInfoReady.subscribe( function () {
+        if (device.platform == 'Android') {
+            channel.onPause.subscribe( function () {
+                // Necessary to set the state to `background`
+                cordova.exec(null, null, 'Easemob', 'pause', []);
+            });
+
+            channel.onResume.subscribe( function () {
+                // Necessary to set the state to `foreground`
+                cordova.exec(null, null, 'Easemob', 'resume', []);
+            });
+
+            // Necessary to set the state to `foreground`
+            cordova.exec(null, null, 'Easemob', 'resume', []);
+        }
+    });
+});
+
+module.exports = easemob;
