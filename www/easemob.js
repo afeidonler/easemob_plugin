@@ -1,6 +1,17 @@
 var cordova = require('cordova'),
 channel = require('cordova/channel');
 var Easemob =function(){};
+
+/**
+ * 登录（绑定监听事件）
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @param  {Array} params     [user,password]
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.init = function() {
+    cordova.exec(null,null,'Easemob','init');
+};
 /**
  * 登录（绑定监听事件）
  * @param  {Function} success 成功回调函数
@@ -18,7 +29,7 @@ Easemob.prototype.login = function(success,error,params) {
  * @return {[type]}         [description]
  */
 Easemob.prototype.logout = function(success,error) {
-    cordova.exec(success,error,'Easemob','logout',params);
+    cordova.exec(success,error,'Easemob','logout');
 };
 /**
  * 发聊天
@@ -158,6 +169,35 @@ Easemob.prototype.getGroups = function(success,error,params) {
  * @return {[type]}         [description]
  */
 Easemob.prototype.getGroup = function(success,error,params) {
+    cordova.exec(success,error,'Easemob','getGroup',params);
+};
+/**
+ * 获取好友列表
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.getContacts = function(success,error) {
+    cordova.exec(success,error,'Easemob','getContacts');
+};
+/**
+ * 添加好友
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @param  {[type]} params  [toUsername,reason]添加的用户名，原因
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.addContact = function(success,error,params) {
+    cordova.exec(success,error,'Easemob','getGroup',params);
+};
+/**
+ * 删除好友
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @param  {[type]} params  [username]删除的用户名
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.addContact = function(success,error,params) {
     cordova.exec(success,error,'Easemob','getGroup',params);
 };
 /**

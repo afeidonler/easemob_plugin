@@ -10,7 +10,7 @@
     <author>donler</author>
 
     <description>
-        com.donler.plugins.easemob
+        com.donler.plugin.easemob
     </description>
 
     <license>MIT</license>
@@ -25,7 +25,7 @@
 
     <!-- android -->
     <platform name="android">
-        <preference name="API_KEY" />
+        <!-- <preference name="API_KEY" /> -->
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="Easemob" >
                 <param name="android-package" value="com.donler.plugin.easemob.Easemob"/>
@@ -70,7 +70,7 @@
             <!-- 设置环信应用的appkey -->
             <meta-data
                 android:name="EASEMOB_APPKEY"
-                android:value="$API_KEY" />
+                android:value="EASEMOB_APPKEY" />
             <!-- 声明sdk所需的service -->
             <service android:name="com.easemob.chat.EMChatService" />
         </config-file>
@@ -101,6 +101,7 @@
         <framework src="libiconv.dylib" />
         <framework src="libresolv.dylib" />
         <framework src="libxml2.dylib" />
+        <resource-file src="src/ios/relative/EaseMob.bundle" />
         <source-file src="src/ios/relative/libEaseMobClientSDKLite.a" framework="true" />
         <header-file src="src/ios/relative/commonDefs.h" />
         <header-file src="src/ios/relative/EMBuddy.h" />

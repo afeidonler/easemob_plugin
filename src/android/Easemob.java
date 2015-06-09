@@ -18,7 +18,7 @@
  */
 package com.donler.plugin.easemob;
 
-//姝ゅ�����������瑕���� XML�����㈢��������涓����
+//濮����锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟界��锟斤拷锟斤拷 XML锟斤拷锟斤拷锟姐��锟斤拷锟斤拷锟斤拷锟斤拷娑�锟斤拷锟斤拷
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -88,7 +88,7 @@ public class Easemob extends CordovaPlugin {
   @SuppressLint("HandlerLeak") private Handler micImageHandler = new Handler() {
     @Override
     public void handleMessage(android.os.Message msg) {
-      // 切换msg切换图片
+      //录音过程中的处理函数，what代表了音量大小
       Log.d("Easemob", msg.toString());
       fireEvent("Record", "{what:" + msg.what + "}");
       // micImage.setImageDrawable(micImages[msg.what]);
@@ -111,21 +111,18 @@ public class Easemob extends CordovaPlugin {
     try {
       int pid = android.os.Process.myPid();
       String processAppName = getAppName(pid);
-      // 锟斤拷锟斤拷app锟斤拷锟斤拷锟斤拷远锟教碉拷service锟斤拷锟斤拷application:onCreate锟结被锟斤拷锟斤拷2锟斤拷
-      // 为锟剿凤拷止锟斤拷锟斤拷SDK锟斤拷锟斤拷始锟斤拷2锟轿ｏ拷锟接达拷锟叫断会保证SDK锟斤拷锟斤拷始锟斤拷1锟斤拷
-      // 默锟较碉拷app锟斤拷锟斤拷锟皆帮拷锟斤拷为默锟较碉拷process
-      // name锟斤拷锟斤拷锟叫ｏ拷锟斤拷锟斤拷锟介到锟斤拷process name锟斤拷锟斤拷app锟斤拷process
-      // name锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷
+      // 如果app启用了远程的service，此application:onCreate会被调用2次
+      // 为了防止环信SDK被初始化2次，加此判断会保证SDK被初始化1次
+      // 默认的app会在以包名为默认的process name下运行，如果查到的process name不是app的process name就立即返回
       if (processAppName == null
           || !processAppName.equalsIgnoreCase(cordova.getActivity()
               .getPackageName())) {
         Log.e(TAG, "enter the service process!");
-        // "com.easemob.chatuidemo"为demo锟侥帮拷锟斤拷锟斤拷锟斤拷锟斤拷锟皆硷拷锟斤拷目锟斤拷要锟侥筹拷锟皆硷拷锟斤拷锟斤拷
-
-        // 锟斤拷锟斤拷application::onCreate 锟角憋拷service 锟斤拷锟矫的ｏ拷直锟接凤拷锟斤拷
+        // 则此application::onCreate 是被service 调用的，直接返回
         return;
       }
       EMChat.getInstance().init(mainActivity);
+      //debug 模式开关
       EMChat.getInstance().setDebugMode(true);
     } catch (Exception e) {
       e.printStackTrace();
@@ -145,8 +142,6 @@ public class Easemob extends CordovaPlugin {
    */
   public boolean execute(String action, JSONArray args,
       CallbackContext callbackContext) throws JSONException {
-    // 杩�������args n灏辨��JS cordova.exec()���绗�浜�涓�������
-    // 浠�JSON��煎��寰���帮��涓�瀹�瑕�瀹�椤哄��
 
     Easemob.emchatCallbackContext = callbackContext;
     String target;
@@ -257,7 +252,7 @@ public class Easemob extends CordovaPlugin {
             new EMValueCallBack<List<EMGroup>>() {
               @Override
               public void onSuccess(List<EMGroup> value) {
-                emchatCallbackContext.success(groupsToJson(value).toString());
+                emchatCallbackContext.success(groupsToJson(value));
               }
 
               @Override
@@ -269,7 +264,7 @@ public class Easemob extends CordovaPlugin {
         // 从本地加载群聊列表
         List<EMGroup> grouplist = EMGroupManager.getInstance()
             .getAllGroups();
-        emchatCallbackContext.success(groupsToJson(grouplist).toString());
+        emchatCallbackContext.success(groupsToJson(grouplist));
       }
 
       break;
