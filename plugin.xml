@@ -84,55 +84,12 @@
         <source-file src="src/android/libs/android-support-v4.jar" target-dir="libs" />
     </platform>
 
-    <!-- amazon-fireos -->
-    <platform name="amazon-fireos">
-
-        <config-file target="res/xml/config.xml" parent="/*">
-            <feature name="PushPlugin" >
-                <param name="android-package" value="com.amazon.cordova.plugin.PushPlugin"/>
-            </feature>
-            <preference name="showmessageinnotification" value="true" />
-            <preference name="defaultnotificationmessage" value="You have a new message." />
-        </config-file>
-
-        <config-file target="AndroidManifest.xml" parent="/manifest">
-            <!-- This permission ensures that no other application can intercept your ADM messages. "[YOUR PACKAGE NAME]" is your package name as defined in your <manifest> tag. -->
-            <permission android:name="$PACKAGE_NAME.permission.RECEIVE_ADM_MESSAGE" android:protectionLevel="signature" />
-            <uses-permission android:name="$PACKAGE_NAME.permission.RECEIVE_ADM_MESSAGE" />
-            <!-- This permission allows your app access to receive push notifications from ADM. -->
-            <uses-permission android:name="com.amazon.device.messaging.permission.RECEIVE" />
-            <!-- ADM uses WAKE_LOCK to keep the processor from sleeping when a message is received. -->
-            <uses-permission android:name="android.permission.WAKE_LOCK" />
-        </config-file>
-
-        <config-file target="AndroidManifest.xml" parent="/manifest/application">
-            <!-- You must explicitly enable ADM and declare whether your app cannot work without ADM (android:required="true") or can work without ADM (android:required="false").
-            If you specify android:required="false", your app must degrade gracefully if ADM
-            is unavailable. -->
-            <amazon:enable-feature android:name="com.amazon.device.messaging" android:required="true"/>
-            <service android:exported="false" android:name="com.amazon.cordova.plugin.ADMMessageHandler" />
-            <activity android:exported="true" android:name="com.amazon.cordova.plugin.ADMHandlerActivity" />
-            <receiver android:name="com.amazon.cordova.plugin.ADMMessageHandler$Receiver" android:permission="com.amazon.device.messaging.permission.SEND">
-                <intent-filter>
-                    <action android:name="com.amazon.device.messaging.intent.REGISTRATION" />
-                    <action android:name="com.amazon.device.messaging.intent.RECEIVE" />
-                    <category android:name="$PACKAGE_NAME" />
-                </intent-filter>
-            </receiver>
-        </config-file>
-
-        <source-file src="src/amazon/PushPlugin.java" target-dir="src/com/amazon/cordova/plugin" />
-        <source-file src="src/amazon/ADMMessageHandler.java" target-dir="src/com/amazon/cordova/plugin" />
-        <source-file src="src/amazon/ADMHandlerActivity.java" target-dir="src/com/amazon/cordova/plugin" />
-
-    </platform>
-
     <!-- ios -->
     <platform name="ios">
 
         <config-file target="config.xml" parent="/*">
             <feature name="easemob">
-                <param name="ios-package" value="easemob"/>
+                <param name="ios-package" value="easemobDonler"/>
             </feature>
         </config-file>
 
@@ -145,9 +102,78 @@
         <framework src="libresolv.dylib" />
         <framework src="libxml2.dylib" />
         <source-file src="src/ios/relative/libEaseMobClientSDKLite.a" framework="true" />
-
-        <header-file src="src/ios/easemob.h" />
-        <source-file src="src/ios/easemob.m" />
+        <header-file src="src/ios/relative/commonDefs.h" />
+        <header-file src="src/ios/relative/EMBuddy.h" />
+        <header-file src="src/ios/relative/EMChatCommand.h" />
+        <header-file src="src/ios/relative/EMChatFile.h" />
+        <header-file src="src/ios/relative/EMChatImage.h" />
+        <header-file src="src/ios/relative/EMChatLocation.h" />
+        <header-file src="src/ios/relative/EMChatManagerBuddyDelegate.h" />
+        <header-file src="src/ios/relative/EMChatManagerChatDelegate.h" />
+        <header-file src="src/ios/relative/EMChatManagerChatroomDelegate.h" />
+        <header-file src="src/ios/relative/EMChatManagerDefs.h" />
+        <header-file src="src/ios/relative/EMChatManagerDelegate.h" />
+        <header-file src="src/ios/relative/EMChatManagerDelegateBase.h" />
+        <header-file src="src/ios/relative/EMChatManagerEncryptionDelegate.h" />
+        <header-file src="src/ios/relative/EMChatManagerGroupDelegate.h" />
+        <header-file src="src/ios/relative/EMChatManagerLoginDelegate.h" />
+        <header-file src="src/ios/relative/EMChatManagerPushNotificationDelegate.h" />
+        <header-file src="src/ios/relative/EMChatManagerUtilDelegate.h" />
+        <header-file src="src/ios/relative/EMChatroom.h" />
+        <header-file src="src/ios/relative/EMChatText.h" />
+        <header-file src="src/ios/relative/EMChatVideo.h" />
+        <header-file src="src/ios/relative/EMChatVoice.h" />
+        <header-file src="src/ios/relative/EMCommandMessageBody.h" />
+        <header-file src="src/ios/relative/EMConversation.h" />
+        <header-file src="src/ios/relative/EMCursorResult.h" />
+        <header-file src="src/ios/relative/EMDeviceManagerDefs.h" />
+        <header-file src="src/ios/relative/EMDeviceManagerDelegate.h" />
+        <header-file src="src/ios/relative/EMDeviceManagerDelegateBase.h" />
+        <header-file src="src/ios/relative/EMDeviceManagerNetworkDelegate.h" />
+        <header-file src="src/ios/relative/EMError.h" />
+        <header-file src="src/ios/relative/EMErrorDefs.h" />
+        <header-file src="src/ios/relative/EMFileMessageBody.h" />
+        <header-file src="src/ios/relative/EMGroup.h" />
+        <header-file src="src/ios/relative/EMGroupManagerDefs.h" />
+        <header-file src="src/ios/relative/EMGroupStyleSetting.h" />
+        <header-file src="src/ios/relative/EMImageMessageBody.h" />
+        <header-file src="src/ios/relative/EMLocationMessageBody.h" />
+        <header-file src="src/ios/relative/EMMessage.h" />
+        <header-file src="src/ios/relative/EMNetworkMonitorDefs.h" />
+        <header-file src="src/ios/relative/EMPushManagerDefs.h" />
+        <header-file src="src/ios/relative/EMPushNotificationOptions.h" />
+        <header-file src="src/ios/relative/EMReceipt.h" />
+        <header-file src="src/ios/relative/EMReceiptBase.h" />
+        <header-file src="src/ios/relative/EMTextMessageBody.h" />
+        <header-file src="src/ios/relative/EMVideoMessageBody.h" />
+        <header-file src="src/ios/relative/EMVoiceMessageBody.h" />
+        <header-file src="src/ios/relative/IChatImageOptions.h" />
+        <header-file src="src/ios/relative/IChatManager.h" />
+        <header-file src="src/ios/relative/IChatManagerBase.h" />
+        <header-file src="src/ios/relative/IChatManagerBuddy.h" />
+        <header-file src="src/ios/relative/IChatManagerChat.h" />
+        <header-file src="src/ios/relative/IChatManagerChatroom.h" />
+        <header-file src="src/ios/relative/IChatManagerConversation.h" />
+        <header-file src="src/ios/relative/IChatManagerDelegate.h" />
+        <header-file src="src/ios/relative/IChatManagerEncryption.h" />
+        <header-file src="src/ios/relative/IChatManagerGroup.h" />
+        <header-file src="src/ios/relative/IChatManagerLogin.h" />
+        <header-file src="src/ios/relative/IChatManagerPushNotification.h" />
+        <header-file src="src/ios/relative/IChatManagerSettingOptions.h" />
+        <header-file src="src/ios/relative/IChatManagerUtil.h" />
+        <header-file src="src/ios/relative/IDeviceManager.h" />
+        <header-file src="src/ios/relative/IDeviceManagerBase.h" />
+        <header-file src="src/ios/relative/IDeviceManagerDelegate.h" />
+        <header-file src="src/ios/relative/IEMChatCryptor.h" />
+        <header-file src="src/ios/relative/IEMChatFile.h" />
+        <header-file src="src/ios/relative/IEMChatObject.h" />
+        <header-file src="src/ios/relative/IEMChatProgressDelegate.h" />
+        <header-file src="src/ios/relative/IEMFileMessageBody.h" />
+        <header-file src="src/ios/relative/IEMMessageBody.h" />
+        <header-file src="src/ios/relative/EaseMobHeaders.h" />
+        <header-file src="src/ios/relative/EaseMob.h" />
+        <header-file src="src/ios/easemobDonler.h" />
+        <source-file src="src/ios/easemobDonler.m" />
 
     </platform>
 
