@@ -18,9 +18,9 @@
  */
 package com.donler.plugin.easemob;
 
-//濮����锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟界��锟斤拷锟斤拷 XML锟斤拷锟斤拷锟姐��锟斤拷锟斤拷锟斤拷锟斤拷娑�锟斤拷锟斤拷
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -38,7 +38,8 @@ import com.easemob.EMEventListener;
 import com.easemob.EMNotifierEvent;
 import com.easemob.EMValueCallBack;
 import com.easemob.chat.EMChatManager;
-//import com.easemob.chat.EMChatOptions;
+import com.easemob.chat.EMContactManager;
+import com.easemob.chat.EMChatOptions;
 import com.easemob.chat.EMConversation;
 import com.easemob.chat.EMGroup;
 import com.easemob.chat.EMGroupManager;
@@ -82,7 +83,27 @@ public class Easemob extends CordovaPlugin {
   private static Boolean deviceready = false;
 
   enum actionType {
-    LOGIN, LOGOUT, CHAT, RECORDSTART, RECORDEND, RECORDCANCEL, GETMESSAGES, PAUSE, RESUME, GETUNREADMSGCOUNT, RESETUNRADMSGCOUNT, GETMSGCOUNT, DELETECONVERSATIONS, DELETECONVERSATION, GETGROUPS, GETGROUP
+  INIT,
+    LOGIN,
+    LOGOUT,
+    CHAT,
+    RECORDSTART,
+    RECORDEND,
+    RECORDCANCEL,
+    GETMESSAGES,
+    PAUSE,
+    RESUME,
+    GETUNREADMSGCOUNT,
+    RESETUNRADMSGCOUNT,
+    GETMSGCOUNT,
+    DELETECONVERSATIONS,
+    DELETECONVERSATION,
+    GETGROUPS,
+    GETGROUP,
+    GETCONTACTS,
+    ADDCONTACT,
+    DELETECONTACT,
+    SETTING
   }
 
   @SuppressLint("HandlerLeak") private Handler micImageHandler = new Handler() {
@@ -108,25 +129,6 @@ public class Easemob extends CordovaPlugin {
     super.initialize(cordova, webView);
     Easemob.webView = super.webView;
     mainActivity = cordova.getActivity();
-    try {
-      int pid = android.os.Process.myPid();
-      String processAppName = getAppName(pid);
-      // 如果app启用了远程的service，此application:onCreate会被调用2次
-      // 为了防止环信SDK被初始化2次，加此判断会保证SDK被初始化1次
-      // 默认的app会在以包名为默认的process name下运行，如果查到的process name不是app的process name就立即返回
-      if (processAppName == null
-          || !processAppName.equalsIgnoreCase(cordova.getActivity()
-              .getPackageName())) {
-        Log.e(TAG, "enter the service process!");
-        // 则此application::onCreate 是被service 调用的，直接返回
-        return;
-      }
-      EMChat.getInstance().init(mainActivity);
-      //debug 模式开关
-      EMChat.getInstance().setDebugMode(true);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
   }
 
   /**
@@ -147,6 +149,9 @@ public class Easemob extends CordovaPlugin {
     String target;
     EMConversation conversation;
     switch (actionType.valueOf(action.toUpperCase())) {
+    case INIT:
+        dealInit();
+        break;
     case LOGIN:
       dealLogin(args);
       break;
@@ -163,19 +168,25 @@ public class Easemob extends CordovaPlugin {
           .getApplicationContext());
       break;
     case RECORDEND:
-      String chatType = args.getString(0);
-      target = args.getString(1);
-      // 获取到与聊天人的会话对象。参数username为聊天人的userid或者groupid，后文中的username皆是如此
-      conversation = EMChatManager.getInstance().getConversation(target);
-      int length = voiceRecorder.stopRecoding();
-      if (length > 0) {
-        sendVoice(conversation, chatType, target,
-            voiceRecorder.getVoiceFilePath(),
-            voiceRecorder.getVoiceFileName(target),
-            Integer.toString(length), false);
-      } else {
-        emchatCallbackContext.error("录音时间过短");
+      if(voiceRecorder==null){
+        emchatCallbackContext.error("当前没有录音");
       }
+      else {
+        String chatType = args.getString(0);
+          target = args.getString(1);
+          // 获取到与聊天人的会话对象。参数username为聊天人的userid或者groupid，后文中的username皆是如此
+          conversation = EMChatManager.getInstance().getConversation(target);
+          int length = voiceRecorder.stopRecoding();
+          if (length > 0) {
+            sendVoice(conversation, chatType, target,
+                voiceRecorder.getVoiceFilePath(),
+                voiceRecorder.getVoiceFileName(target),
+                Integer.toString(length), false);
+          } else {
+            emchatCallbackContext.error("录音时间过短");
+          }
+      }
+      
       break;
     case RECORDCANCEL:
       if (voiceRecorder != null) {
@@ -295,6 +306,48 @@ public class Easemob extends CordovaPlugin {
       }
 
       break;
+    case GETCONTACTS:
+      try {
+        List<String> usernames = EMContactManager.getInstance().getContactUserNames();//需异步执行
+        JSONArray mJSONArray = new JSONArray(usernames);
+        emchatCallbackContext.success(mJSONArray);
+      }
+      catch (EaseMobException e){
+        emchatCallbackContext.error(e.toString());
+      }
+      break;
+    case ADDCONTACT:
+      try {
+        target = args.getString(0);
+        String reason;
+        if(args.length()>1) {
+          reason = args.getString(1);
+        }
+        else {
+          reason = "";
+        }
+        //参数为要添加的好友的username和添加理由
+        EMContactManager.getInstance().addContact(target, reason);//需异步处理
+        emchatCallbackContext.success("成功");
+      }
+      catch (EaseMobException e){
+        emchatCallbackContext.error(e.toString());
+      }
+      break;
+    case DELETECONTACT:
+      try {
+        target = args.getString(0);
+        EMContactManager.getInstance().deleteContact(target);//需异步处理
+        emchatCallbackContext.success("成功");
+      }
+      catch (EaseMobException e){
+        emchatCallbackContext.error(e.toString());
+      }
+      break;
+    case SETTING:
+      dealSetting(args);
+      break;
+      
     default:
       return false;
     }
@@ -371,7 +424,7 @@ public class Easemob extends CordovaPlugin {
         @Override
         public void onSuccess() {
           Log.d("main", "发送成功");
-          emchatCallbackContext.success("发送成功");
+          emchatCallbackContext.success(messageToJson(message));
         }
 
         @Override
@@ -380,9 +433,9 @@ public class Easemob extends CordovaPlugin {
         }
 
         @Override
-        public void onError(int code, String message) {
+        public void onError(int code, String errorMessage) {
           Log.d("main", "发送失败！");
-          emchatCallbackContext.error("发送失败！");
+          emchatCallbackContext.error(messageToJson(message));
         }
       });
     } catch (Exception e) {
@@ -478,24 +531,47 @@ public class Easemob extends CordovaPlugin {
       webView.sendJavascript(js);
     }
   }
-
+  private void dealInit() { 
+    try {
+        int pid = android.os.Process.myPid();
+        String processAppName = getAppName(pid);
+        // 如果app启用了远程的service，此application:onCreate会被调用2次
+        // 为了防止环信SDK被初始化2次，加此判断会保证SDK被初始化1次
+        // 默认的app会在以包名为默认的process name下运行，如果查到的process name不是app的process name就立即返回
+        if (processAppName == null
+            || !processAppName.equalsIgnoreCase(cordova.getActivity()
+                .getPackageName())) {
+          Log.e(TAG, "enter the service process!");
+          // 则此application::onCreate 是被service 调用的，直接返回
+          return;
+        }
+        EMChat.getInstance().init(mainActivity);
+        bindListener();
+        //debug 模式开关
+        EMChat.getInstance().setDebugMode(true);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+  }
   private void dealChat(JSONArray _args) {
     final JSONArray args = _args;
     cordova.getThreadPool().execute(new Runnable() {
       public void run() {
         String chatType, target, _contentType;
-        JSONObject content;
+        JSONObject params,content,extend;
         Type contentType;
         try {
-          chatType = args.getString(0);
-          target = args.getString(1);
-          _contentType = args.getString(2);
-          content = args.getJSONObject(3);
+          params = args.getJSONObject(0);
+          
+          chatType = params.getString("chatType");
+          target = params.getString("target");
+          _contentType = params.getString("contentType");
+          content = params.getJSONObject("content");
           contentType = EMMessage.Type.valueOf(_contentType.toUpperCase());
           // 获取到与聊天人的会话对象。参数username为聊天人的userid或者groupid，后文中的username皆是如此
           EMConversation conversation = EMChatManager.getInstance()
               .getConversation(target);
-          EMMessage message = EMMessage
+          final EMMessage message = EMMessage
               .createSendMessage(contentType);
           // 如果是群聊，设置chattype,默认是单聊
           if (chatType.equals("group")) {
@@ -545,6 +621,26 @@ public class Easemob extends CordovaPlugin {
             message.addBody(textBody);
             break;
           }
+          if(params.has("extend")) {
+            extend = params.getJSONObject("extend");
+              Iterator it = extend.keys();  
+              while (it.hasNext()) {  
+                  String key = (String) it.next();  
+                  Object v = extend.get(key); 
+                  if (v instanceof Integer || v instanceof Long || v instanceof Float || v instanceof Double) {
+                      int value = ((Number)v).intValue();
+                      message.setAttribute(key, value);
+                } else if (v instanceof Boolean) {
+                    boolean boolToUse = ((Boolean)v).booleanValue();
+                    message.setAttribute(key, boolToUse);
+                } else {
+                    String stringToUse = extend.getString(key);
+                      message.setAttribute(key, stringToUse);
+                }
+                  
+              }  
+          }
+          
           // 设置接收人
           message.setReceipt(target);
           // 把消息加入到此会话对象中
@@ -553,9 +649,9 @@ public class Easemob extends CordovaPlugin {
           EMChatManager.getInstance().sendMessage(message,
               new EMCallBack() {
                 @Override
-                public void onSuccess() {
+                public void onSuccess( ) {
                   Log.d("main", "发送成功");
-                  emchatCallbackContext.success("发送成功");
+                  emchatCallbackContext.success(messageToJson(message));
                 }
 
                 @Override
@@ -564,9 +660,9 @@ public class Easemob extends CordovaPlugin {
                 }
 
                 @Override
-                public void onError(int code, String message) {
+                public void onError(int code, String errorMessage) {
                   Log.d("main", "发送失败！");
-                  emchatCallbackContext.error("发送失败！");
+                  emchatCallbackContext.error(messageToJson(message));
                 }
               });
         } catch (JSONException e1) {
@@ -599,7 +695,6 @@ public class Easemob extends CordovaPlugin {
                       .loadAllConversations();
                   Log.d("main", "登陆聊天服务器成功！");
                   emchatCallbackContext.success("登陆聊天服务器成功！");
-                  bindListener();
                 }
               });
             }
@@ -702,7 +797,41 @@ public class Easemob extends CordovaPlugin {
     });
 
   }
+  private void dealSetting(JSONArray args) {
+    JSONObject params;
+  try {
+    params = args.getJSONObject(0);
+    // 首先获取EMChatOptions
+        EMChatOptions chatOptions = EMChatManager.getInstance().getChatOptions();
+        if (params.has("NotifyBySoundAndVibrate")) {
+          // 设置是否启用新消息提醒(打开或者关闭消息声音和震动提示)
+            chatOptions.setNotifyBySoundAndVibrate(params.getBoolean("NotifyBySoundAndVibrate")); //默认为true 开启新消息提醒
+      }
+        if (params.has("NoticeBySound")) {
+          // 设置是否启用新消息声音提醒
+            chatOptions.setNoticeBySound(params.getBoolean("NoticeBySound")); //默认为true 开启声音提醒
 
+      }
+        if (params.has("NoticedByVibrate")) {
+          // 设置是否启用新消息震动提醒
+            chatOptions.setNoticedByVibrate(params.getBoolean("NoticedByVibrate")); //默认为true 开启新消息提醒
+      }
+        if (params.has("UseSpeaker")) {
+          // 设置语音消息播放是否设置为扬声器播放
+            chatOptions.setUseSpeaker(params.getBoolean("UseSpeaker")); //默认为true 开启新消息提醒
+      }
+        if (params.has("ShowNotificationInBackgroud")) {
+          // 设置后台接收新消息时是否通通知栏提示
+            chatOptions.setShowNotificationInBackgroud(params.getBoolean("ShowNotificationInBackgroud")); //默认为true 开启新消息提醒
+      }
+        emchatCallbackContext.success("设置成功");
+  } catch (JSONException e) {
+    e.printStackTrace();
+    emchatCallbackContext.error("设置失败");
+  }
+      
+
+  }
   private void bindListener() {
     noifier = new HXNotifier();
     noifier.init(cordova.getActivity().getApplicationContext());

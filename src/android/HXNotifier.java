@@ -31,6 +31,7 @@ import android.support.v4.app.NotificationCompat;
 
 // import com.easemob.applib.controller.HXSDKHelper;
 import com.easemob.chat.EMChatManager;
+import com.easemob.chat.EMChatOptions;
 import com.easemob.chat.EMMessage;
 import com.easemob.util.EMLog;
 import com.easemob.util.EasyUtils;
@@ -126,11 +127,16 @@ public class HXNotifier {
         if(EMChatManager.getInstance().isSlientMessage(message)){
             return;
         }
-        
+        EMChatOptions chatOptions = EMChatManager.getInstance().getChatOptions();
         // 判断app是否在后台
         if (!EasyUtils.isAppRunningForeground(appContext)) {
             EMLog.d(TAG, "app is running in backgroud");
-            sendNotification(message, false);
+            if(chatOptions.isShowNotificationInBackgroud()){
+                sendNotification(message, false);
+            }
+            else {
+                return;
+            }
         } else {
             sendNotification(message, true);
 
@@ -143,10 +149,15 @@ public class HXNotifier {
         if(EMChatManager.getInstance().isSlientMessage(messages.get(messages.size()-1))){
             return;
         }
-        // 判断app是否在后台
+        EMChatOptions chatOptions = EMChatManager.getInstance().getChatOptions();
         if (!EasyUtils.isAppRunningForeground(appContext)) {
             EMLog.d(TAG, "app is running in backgroud");
-            sendNotification(messages, false);
+            if(chatOptions.isShowNotificationInBackgroud()){
+                sendNotification(messages, false);
+            }
+            else {
+                return;
+            }
         } else {
             sendNotification(messages, true);
         }
@@ -290,12 +301,10 @@ public class HXNotifier {
                 return;
             } 
         }
-        
-        // HXSDKModel model = HXSDKHelper.getInstance().getModel();
-        // if(!model.getSettingMsgNotification()){
-        //     return;
-        // }
-        
+        EMChatOptions chatOptions = EMChatManager.getInstance().getChatOptions();
+         if(!chatOptions.getNotifyBySoundAndVibrate()){
+             return;
+         }
         if (System.currentTimeMillis() - lastNotifiyTime < 1000) {
             // received new messages within 2 seconds, skip play ringtone
             return;
@@ -310,12 +319,12 @@ public class HXNotifier {
                 return;
             }
             
-            // if(model.getSettingMsgVibrate()){
+             if(chatOptions.getNoticedByVibrate()){
                 long[] pattern = new long[] { 0, 180, 80, 120 };
                 vibrator.vibrate(pattern, -1);
-            // }
+             }
 
-            // if(model.getSettingMsgSound()){
+             if(chatOptions.getNoticedBySound()){
                 if (ringtone == null) {
                     Uri notificationUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
@@ -349,7 +358,7 @@ public class HXNotifier {
                         ctlThread.run();
                     }
                 }
-            // }
+             }
         } catch (Exception e) {
             e.printStackTrace();
         }
