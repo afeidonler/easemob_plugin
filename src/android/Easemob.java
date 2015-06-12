@@ -952,7 +952,8 @@ public class Easemob extends CordovaPlugin {
       case VOICE:
         VoiceMessageBody voiceBody = (VoiceMessageBody) message
             .getBody();
-        body.put("url", voiceBody.getLocalUrl())
+        body.put("localUrl", voiceBody.getLocalUrl())
+            .put("remoteUrl", voiceBody.getRemoteUrl())
             .put("name", voiceBody.getFileName())
             .put("size", voiceBody.getLength());
         break;
@@ -976,8 +977,8 @@ public class Easemob extends CordovaPlugin {
         NormalFileMessageBody fileBody = (NormalFileMessageBody) message
             .getBody();
         body.put("name", fileBody.getFileName())
-            .put("size", fileBody.getFileSize());
-            .put("localUrl", fileBody.getLocalUrl());
+            .put("size", fileBody.getFileSize())
+            .put("localUrl", fileBody.getLocalUrl())
             .put("remoteUrl", fileBody.getRemoteUrl());
 
         break;
