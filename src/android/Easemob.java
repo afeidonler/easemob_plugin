@@ -959,11 +959,10 @@ public class Easemob extends CordovaPlugin {
       case IMAGE:
         ImageMessageBody imageBody = (ImageMessageBody) message
             .getBody();
-        if (message.direct.equals(EMMessage.Direct.SEND)) {
-          body.put("url", imageBody.getLocalUrl());
-        } else {
-          body.put("url", imageBody.getThumbnailUrl());
-        }
+          body.put("localUrl", imageBody.getLocalUrl())
+              .put("remoteUrl", imageBody.getRemoteUrl())
+              .put("thumbnailUrl", imageBody.getThumbnailUrl());
+          
 
         break;
       case LOCATION:
@@ -976,14 +975,10 @@ public class Easemob extends CordovaPlugin {
       case FILE:
         NormalFileMessageBody fileBody = (NormalFileMessageBody) message
             .getBody();
-        body.put("url", fileBody.getLocalUrl())
-            .put("name", fileBody.getFileName())
+        body.put("name", fileBody.getFileName())
             .put("size", fileBody.getFileSize());
-        if (message.direct.equals(EMMessage.Direct.SEND)) {
-          body.put("url", fileBody.getLocalUrl());
-        } else {
-          body.put("url", fileBody.getRemoteUrl());
-        }
+            .put("localUrl", fileBody.getLocalUrl());
+            .put("remoteUrl", fileBody.getRemoteUrl());
 
         break;
       case TXT:
@@ -993,7 +988,7 @@ public class Easemob extends CordovaPlugin {
         break;
       }
       try {
-        body.put("extend", message.getJSONObjectAttribute("extend"));
+        msgJson.put("extend", message.getJSONObjectAttribute("extend"));
       } catch (EaseMobException e) {
         e.printStackTrace();
       }
