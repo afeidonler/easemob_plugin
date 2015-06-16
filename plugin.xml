@@ -171,8 +171,39 @@
         <header-file src="src/ios/relative/IEMChatProgressDelegate.h" />
         <header-file src="src/ios/relative/IEMFileMessageBody.h" />
         <header-file src="src/ios/relative/IEMMessageBody.h" />
+        <header-file src="src/ios/relative/deviceUtil/EMAudioPlayerUtil.h" />
+        <source-file src="src/ios/relative/deviceUtil/EMAudioPlayerUtil.m" />
+        <header-file src="src/ios/relative/deviceUtil/EMAudioRecorderUtil.h" />
+        <source-file src="src/ios/relative/deviceUtil/EMAudioRecorderUtil.m" />
+        <header-file src="src/ios/relative/deviceUtil/EMCDDeviceManager+Media.h" />
+        <source-file src="src/ios/relative/deviceUtil/EMCDDeviceManager+Media.m" />
+        <header-file src="src/ios/relative/deviceUtil/EMCDDeviceManager+Microphone.h" />
+        <source-file src="src/ios/relative/deviceUtil/EMCDDeviceManager+Microphone.m" />
+        <header-file src="src/ios/relative/deviceUtil/EMCDDeviceManagerProximitySensorDelegate.h" />
+        <header-file src="src/ios/relative/deviceUtil/EMCDDeviceManager+ProximitySensor.h" />
+        <source-file src="src/ios/relative/deviceUtil/EMCDDeviceManager+ProximitySensor.m" />
+        <header-file src="src/ios/relative/deviceUtil/EMCDDeviceManager+Remind.h" />
+        <source-file src="src/ios/relative/deviceUtil/EMCDDeviceManager+Remind.m" />
+        <header-file src="src/ios/relative/deviceUtil/EMCDDeviceManagerDelegate.h" />
+        <header-file src="src/ios/relative/deviceUtil/EMCDDeviceManagerBase.h" />
+        <source-file src="src/ios/relative/deviceUtil/EMCDDeviceManagerBase.m" />
+        <header-file src="src/ios/relative/deviceUtil/EMCDDeviceManager.h" />
+        <header-file src="src/ios/relative/VoiceConvert/amrwapper/amrFileCodec.h" />
+        <source-file src="src/ios/relative/VoiceConvert/amrwapper/amrFileCodec.mm" />
+        <header-file src="src/ios/relative/VoiceConvert/amrwapper/wav.h" />
+        <source-file src="src/ios/relative/VoiceConvert/amrwapper/wav.mm" />
+        <header-file src="src/ios/relative/VoiceConvert/opencore-amrnb/interf_dec.h" />
+        <header-file src="src/ios/relative/VoiceConvert/opencore-amrnb/interf_enc.h" />
+        <source-file src="src/ios/relative/VoiceConvert/opencore-amrnb/libopencore-amrnb.a" framework="true" />
+        <header-file src="src/ios/relative/VoiceConvert/opencore-amrwb/dec_if.h" />
+        <header-file src="src/ios/relative/VoiceConvert/opencore-amrwb/if_rom.h" />
+        <source-file src="src/ios/relative/VoiceConvert/opencore-amrwb/libopencore-amrwb.a" framework="true" />
+        <header-file src="src/ios/relative/VoiceConvert/EMVoiceConverter.h" />
+        <source-file src="src/ios/relative/VoiceConvert/EMVoiceConverter.mm" />
         <header-file src="src/ios/relative/EaseMobHeaders.h" />
         <header-file src="src/ios/relative/EaseMob.h" />
+        <header-file src="src/ios/ChatSendHelper.h" />
+        <source-file src="src/ios/ChatSendHelper.m" />
         <header-file src="src/ios/easemobDonler.h" />
         <source-file src="src/ios/easemobDonler.m" />
 
