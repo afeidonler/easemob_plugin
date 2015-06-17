@@ -962,7 +962,9 @@ public class Easemob extends CordovaPlugin {
             .getBody();
           body.put("localUrl", imageBody.getLocalUrl())
               .put("remoteUrl", imageBody.getRemoteUrl())
-              .put("thumbnailUrl", imageBody.getThumbnailUrl());
+              .put("thumbnailUrl", imageBody.getThumbnailUrl())
+              .put("with", imageBody.getWidth())
+              .put("height", imageBody.getHeight());
           
 
         break;
