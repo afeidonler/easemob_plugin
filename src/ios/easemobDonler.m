@@ -1,14 +1,25 @@
 #import "easemobDonler.h"
 #import "ChatSendHelper.h"
+#import "EMChatManagerDelegateBase.h"
 #import <AVFoundation/AVFoundation.h>
 
-@implementation easemobDonler
+@interface easemobDonler()<IChatManagerDelegate>{
+
+}
+@end
+@implementation easemobDonler;
 
 - (void) init:(CDVInvokedUrlCommand *)command
 {
-  [[EaseMob sharedInstance] registerSDKWithAppKey:@"donler#donlerapp" 
-    apnsCertName:@"55yali"
+    //NSMutableDictionary* options = [command.arguments objectAtIndex:0];
+    self.callbackId = command.callbackId;
+    //self.callback = [options objectForKey:@"ecb"];
+    [[EaseMob sharedInstance] registerSDKWithAppKey:@"donler#donlerapp"
+     apnsCertName:@"55yali"
       otherConfig:@{kSDKConfigEnableConsoleLogger:[NSNumber numberWithBool:YES]}];
+    [EMCDDeviceManager sharedInstance].delegate = self;
+    [[EaseMob sharedInstance].chatManager removeDelegate:self];
+    [[EaseMob sharedInstance].chatManager addDelegate:self delegateQueue:nil];
 }
 
 /**
@@ -54,6 +65,7 @@
 
 - (void) chat:(CDVInvokedUrlCommand *)command
 {
+    NSLog(@"%@",command.callbackId);
     NSDictionary *args = [command.arguments objectAtIndex: 0];
     NSString* chatType = [args objectForKey: @"chatType"];
     NSString* target = [args objectForKey: @"target"];
@@ -115,25 +127,14 @@
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-//- (void) recordStart:(CDVInvokedUrlCommand *)command
-//{
-//
-//}
 
 - (void) recordstart:(CDVInvokedUrlCommand *)command
 {
-     NSString *username = [command.arguments objectAtIndex: 0];
      if ([self canRecord]) {
-         //DXRecordView *tmpView = (DXRecordView *)recordView;
-         //tmpView.center = self.view.center;
-         //[self.view addSubview:tmpView];
-         //[self.view bringSubviewToFront:recordView];
          int x = arc4random() % 100000;
          NSTimeInterval time = [[NSDate date] timeIntervalSince1970];
          NSString *fileName = [NSString stringWithFormat:@"%d%d",(int)time,x];
          NSLog(@"%@",fileName);
-//         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-//         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
          [[EMCDDeviceManager sharedInstance] asyncStartRecordingWithFileName:fileName
                                                                   completion:^(NSError *error)
           {
@@ -152,12 +153,10 @@
 
 - (void) recordend: (CDVInvokedUrlCommand *)command
 {
-    //__weak typeof(self) weakSelf = self;
-
     [[EMCDDeviceManager sharedInstance] asyncStopRecordingWithCompletion:^(NSString *recordPath, NSInteger aDuration, NSError *error) {
         if (!error) {
-            NSString *chatType = [command.arguments objectAtIndex: 0];
-            NSString* target = [command.arguments objectAtIndex: 1];
+            NSString *chatType = command.arguments[0];
+            NSString* target = command.arguments[1];
             EMMessageType messageType;
             if([chatType isEqualToString:@"single"])
             {
@@ -170,7 +169,6 @@
             EMChatVoice *voice = [[EMChatVoice alloc] initWithFile:recordPath
                                                        displayName:@"audio"];
             voice.duration = aDuration;
-            //[weakSelf sendAudioMessage:voice];
             EMMessage *tempMessage = [ChatSendHelper sendVoice:voice
                                                     toUsername:target
                                                    messageType:messageType
@@ -181,13 +179,44 @@
 
         }else {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                //[weakSelf hideHud];
-                //weakSelf.chatToolBar.recordButton.enabled = YES;
                 CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"录音时间太短"];
                 [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
             });
         }
     }];
+}
+
+- (void)didReceiveMessage:(EMMessage *)message
+{
+    NSLog (@"%@", message);
+    if (self.callbackId != nil)
+    {
+        NSMutableDictionary *resultMessage = [self formatMessage:message];
+        NSError  *error;
+        NSData   *jsonData   = [NSJSONSerialization dataWithJSONObject:resultMessage options:0 error:&error];
+        NSString *jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
+        [self.commandDelegate evalJs:[NSString stringWithFormat:@"window.easemob.onReciveMessage(%@)",jsonString]];
+//        CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:message];
+//        [self.commandDelegate sendPluginResult:commandResult callbackId:self.callbackId];
+    }
+}
+
+- (void)didReceiveCmdMessage:(EMMessage *)cmdMessage
+{
+    NSLog (@"%@", cmdMessage);
+    if (self.callbackId != nil)
+    {
+        CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:cmdMessage];
+        [self.commandDelegate sendPluginResult:commandResult callbackId:self.callbackId];
+    }
+}
+- (void)didFinishedReceiveOfflineMessages:(NSArray *)offlineMessages{
+    NSLog (@"%@", offlineMessages);
+    if (self.callbackId != nil)
+    {
+        CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:offlineMessages];
+        [self.commandDelegate sendPluginResult:commandResult callbackId:self.callbackId];
+    }
 }
 
 - (BOOL)canRecord
@@ -212,39 +241,109 @@
     NSMutableDictionary *resultMessage = [NSMutableDictionary dictionaryWithCapacity:10];
 
     id type ;
+    //todo:换实现
     switch (tempMessage.messageType) {
         case eMessageTypeChat:{
-            type = @"single";
+            type = @"Chat";
         };
         break;
         case eMessageTypeGroupChat:{
-            type = @"group";
+            type = @"GroupChat";
         };
     }
-    [resultMessage setObject:type forKey:@"type"];
-    [resultMessage setObject:@"send" forKey:@"direct"];
-    [resultMessage setObject:tempMessage.to forKey:@"to"];
-    [resultMessage setObject:tempMessage.from forKey:@"from"];
-    [resultMessage setObject:tempMessage.messageId forKey:@"msgId"];
+    //基本属性
+    resultMessage[@"chatType"] = type;
+    resultMessage[@"to"] = tempMessage.to;
+    resultMessage[@"from"] = tempMessage.from;
+    resultMessage[@"msgId"] = tempMessage.messageId;
+    NSNumber *timestamp = @(tempMessage.timestamp);
+    resultMessage[@"msgTime"] = timestamp;
+    NSNumber *unRead = @(!tempMessage.isRead);
+    resultMessage[@"unRead"] = unRead;
+    //isListened 未找到
+    //todo 换实现
+    id status ;
+    switch (tempMessage.deliveryState) {
+        case eMessageDeliveryState_Pending:{
+            status = @"CREATE";
+        };
+        break;
+        case eMessageDeliveryState_Delivering:{
+            status = @"INPROGRESS";
+        };
+        break;
+        case eMessageDeliveryState_Delivered:{
+            status = @"SUCCESS";
+        };
+        break;
+        case eMessageDeliveryState_Failure:{
+            status = @"FAIL";
+        };
+        break;
+    }
+    resultMessage[@"status"] = status;
+    NSNumber *isAcked = @(!tempMessage.isReadAcked);
+    resultMessage[@"isAcked"] = isAcked;
+    //progress 无
+    tempMessage.ext ? resultMessage[@"ext"] = tempMessage.ext : nil;
+
+    //body
     id<IEMMessageBody> msgBody = tempMessage.messageBodies.firstObject;
+    NSMutableDictionary *messageBody = [NSMutableDictionary dictionaryWithCapacity:10];;
     switch (msgBody.messageBodyType) {
         case eMessageBodyType_Text:{
             NSString *txt = ((EMTextMessageBody *)msgBody).text;
-            [resultMessage setObject:txt forKey:@"text"];
+            messageBody[@"text"] = txt;
         };
         break;
         case eMessageBodyType_Image:{
+            EMImageMessageBody *body = ((EMImageMessageBody *)msgBody);
+            //大图remote路径
+            //[messageBody setObject:body.remotePath forKey:@"remoteUrl"];
+            //NSLog(@"大图local路径 -- %@"    ,body.localPath); // // 需要使用sdk提供的下载方法后才会存在
+            messageBody[@"localUrl"] = body.localPath;
+            //大图的secret
+            //[messageBody setObject:body.secretKey forKey:@"secretKey"];
+            //大图的H
+            NSNumber *height = @(body.size.height);
+            messageBody[@"height"] = height;
+            //大图的W
+            NSNumber *width = @(body.size.width);
+            messageBody[@"width"] = width;
+            //大图的下载状态
+            //[messageBody setObject:body.attachmentDownloadStatus forKey:@"attachmentDownloadStatus"];
+            // 缩略图sdk会自动下载
+            //小图local路径
+            messageBody[@"thumbnailUrl"] = body.thumbnailLocalPath;
+            //NSLog(@"小图的secret -- %@"    ,body.thumbnailSecretKey);
 
+            //小图的H
+            NSNumber *thumbnailHeight = @(body.thumbnailSize.height);
+            messageBody[@"height"] = thumbnailHeight;
+            //小图的W
+            NSNumber *thumbnailWidth = @(body.thumbnailSize.width);
+            messageBody[@"width"] = thumbnailWidth;
+            //NSLog(@"小图的下载状态 -- %lu",body.thumbnailDownloadStatus);
         };
         break;
         case eMessageBodyType_Location:{
-
+            //todo
         };
         break;
         case eMessageBodyType_Voice:{
-
+            EMVoiceMessageBody *body = (EMVoiceMessageBody *)msgBody;
+            //NSLog(@"音频remote路径 -- %@"      ,body.remotePath);
+            //音频local路径 //需要使用sdk提供的下载方法后才会存在（音频会自动调用）
+            messageBody[@"localUrl"] = body.localPath;
+            //NSLog(@"音频的secret -- %@"        ,body.secretKey);
+            NSNumber *duration = @(body.duration);
+            messageBody[@"duration"] = duration;
+            //NSLog(@"音频文件大小 -- %lld"       ,body.fileLength);
+            //NSLog(@"音频文件的下载状态 -- %lu"   ,body.attachmentDownloadStatus);
+            //NSLog(@"音频的时间长度 -- %lu"      ,body.duration);
         };
     }
+    messageBody ? resultMessage[@"body"] = messageBody : nil;
     return resultMessage;
 }
 
