@@ -26,4 +26,10 @@
 - (void) getGroups: (CDVInvokedUrlCommand *)command;
 
 - (void) getMessages: (CDVInvokedUrlCommand *)command;
+
+- (void) resetUnreadMsgCount: (CDVInvokedUrlCommand *)command;
+
+- (void) clearConversation: (CDVInvokedUrlCommand *)command;
+
+- (void) deleteConversation: (CDVInvokedUrlCommand *)command;
 @end

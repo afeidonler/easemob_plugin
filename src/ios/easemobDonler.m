@@ -277,9 +277,53 @@
 }
 
 /**
+* 清零未读数
+*/
+- (void) resetUnreadMsgCount: (CDVInvokedUrlCommand *)command
+{
+    NSString *chatType = command.arguments[0];
+    EMMessageType messageType = [self convertToMessageType:chatType];
+    NSString *chatter = command.arguments[1];
+    EMConversation *conversation = [[EaseMob sharedInstance].chatManager conversationForChatter:chatter conversationType:messageType];
+    [conversation markAllMessagesAsRead: 1];
+    CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:commandResult callbackId:command.callbackId];
+}
+
+/**
+* 清零会话聊天记录
+*/
+- (void) clearConversation: (CDVInvokedUrlCommand *)command
+{
+    NSString *chatType = command.arguments[0];
+    EMMessageType messageType = [self convertToMessageType:chatType];
+    NSString *chatter = command.arguments[1];
+    EMConversation *conversation = [[EaseMob sharedInstance].chatManager conversationForChatter:chatter conversationType:messageType];
+    [conversation removeAllMessages];
+    CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:commandResult callbackId:command.callbackId];
+}
+
+/**
+* 删除会话某条聊天记录
+*/
+- (void) deleteConversation: (CDVInvokedUrlCommand *)command
+{
+    NSString *chatType = command.arguments[0];
+    EMMessageType messageType = [self convertToMessageType:chatType];
+    NSString *chatter = command.arguments[1];
+    EMConversation *conversation = [[EaseMob sharedInstance].chatManager conversationForChatter:chatter conversationType:messageType];
+    NSString *msgId = command.arguments[2];
+    [conversation removeMessageWithId: msgId];
+    CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:commandResult callbackId:command.callbackId];
+}
+
+/**
 * 字符串转换为EMMessageType
 */
-- (EMMessageType) convertToMessageType: (NSString *)chatType{
+- (EMMessageType) convertToMessageType: (NSString *)chatType
+{
     EMMessageType messageType;
     if([chatType isEqualToString:@"single"])
     {
