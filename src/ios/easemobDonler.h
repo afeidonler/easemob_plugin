@@ -6,6 +6,9 @@
 @interface easemobDonler : CDVPlugin
 {}
 
+@property (nonatomic, copy) NSString *callbackId;
+@property (nonatomic, copy) NSString *callback;
+
 - (void) init:(CDVInvokedUrlCommand *)command;
 
 - (void) login:(CDVInvokedUrlCommand *)command;
@@ -15,4 +18,10 @@
 - (void) recordstart:(CDVInvokedUrlCommand *)command;
 
 - (void) recordend: (CDVInvokedUrlCommand *)command;
+
+- (void) recordcancel: (CDVInvokedUrlCommand *)command;
+
+- (void) getGroups: (CDVInvokedUrlCommand *)command;
+
+- (void) getMessages: (CDVInvokedUrlCommand *)command;
 @end
