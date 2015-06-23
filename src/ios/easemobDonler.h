@@ -13,6 +13,8 @@
 
 - (void) login:(CDVInvokedUrlCommand *)command;
 
+- (void) logout:(CDVInvokedUrlCommand *)command;
+
 - (void) chat:(CDVInvokedUrlCommand *)command;
 
 - (void) recordstart:(CDVInvokedUrlCommand *)command;

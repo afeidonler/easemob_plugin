@@ -8,14 +8,10 @@
 }
 @end
 @implementation easemobDonler;
-//@synthesize callbackId;
-//@synthesize callback;
 
 - (void) init:(CDVInvokedUrlCommand *)command
 {
-    //NSMutableDictionary* options = [command.arguments objectAtIndex:0];
     self.callbackId = command.callbackId;
-    //self.callback = [options objectForKey:@"ecb"];
     [[EaseMob sharedInstance] registerSDKWithAppKey:@"donler#donlerapp"
      apnsCertName:@"55yali"
       otherConfig:@{kSDKConfigEnableConsoleLogger:[NSNumber numberWithBool:YES]}];
@@ -63,6 +59,22 @@
 
   //CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary: resultArray];
   //[self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void) logout:(CDVInvokedUrlCommand *)command
+{
+    [[EaseMob sharedInstance].chatManager asyncLogoffWithUnbindDeviceToken:YES/NO completion:^(NSDictionary *info, EMError *error) {
+        if (!error && info) {
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        }
+        else
+        {
+            NSString *errorMessage = [NSString stringWithFormat:@"%@",error.errorCode];
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errorMessage];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        }
+    } onQueue:nil];
 }
 
 /**
