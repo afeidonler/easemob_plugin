@@ -257,7 +257,8 @@
     EMMessageType messageType = [self convertToMessageType:chatType];
     NSString *chatter = command.arguments[1];
     EMConversation *conversation = [[EaseMob sharedInstance].chatManager conversationForChatter:chatter conversationType:messageType];
-    NSArray *messages =  [conversation loadAllMessages];
+    NSString *messageId = command.arguments.count ==3 ? command.arguments[2] : nil;
+    NSArray *messages = [conversation loadNumbersOfMessages:20 withMessageId:messageId];
     NSMutableArray *retMessages = [self formatMessages:messages];
     CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:retMessages];
     [self.commandDelegate sendPluginResult:commandResult callbackId:command.callbackId];
