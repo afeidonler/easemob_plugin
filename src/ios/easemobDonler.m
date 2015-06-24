@@ -11,7 +11,6 @@
 
 - (void) init:(CDVInvokedUrlCommand *)command
 {
-    self.callbackId = command.callbackId;
     [[EaseMob sharedInstance] registerSDKWithAppKey:@"donler#donlerapp"
      apnsCertName:@"55yali"
       otherConfig:@{kSDKConfigEnableConsoleLogger:[NSNumber numberWithBool:YES]}];
@@ -216,38 +215,29 @@
 - (void)didReceiveMessage:(EMMessage *)message
 {
     NSLog (@"%@", message);
-    if (self.callbackId != nil)
-    {
-        NSMutableDictionary *resultMessage = [self formatMessage:message];
-        NSError  *error;
-        NSData   *jsonData   = [NSJSONSerialization dataWithJSONObject:resultMessage options:0 error:&error];
-        NSString *jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
-        [self.commandDelegate evalJs:[NSString stringWithFormat:@"window.easemob.onReciveMessage(%@)",jsonString]];
-    }
+    NSMutableDictionary *resultMessage = [self formatMessage:message];
+    NSError  *error;
+    NSData   *jsonData   = [NSJSONSerialization dataWithJSONObject:resultMessage options:0 error:&error];
+    NSString *jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
+    [self.commandDelegate evalJs:[NSString stringWithFormat:@"window.easemob.onReciveMessage(%@)",jsonString]];
 }
 
 - (void)didReceiveCmdMessage:(EMMessage *)cmdMessage
 {
     NSLog (@"%@", cmdMessage);
-    if (self.callbackId != nil)
-    {
-        NSMutableDictionary *resultMessage = [self formatMessage:cmdMessage];
-        NSError  *error;
-        NSData   *jsonData   = [NSJSONSerialization dataWithJSONObject:resultMessage options:0 error:&error];
-        NSString *jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
-        [self.commandDelegate evalJs:[NSString stringWithFormat:@"window.easemob.onReciveMessage(%@)",jsonString]];
-    }
+    NSMutableDictionary *resultMessage = [self formatMessage:cmdMessage];
+    NSError  *error;
+    NSData   *jsonData   = [NSJSONSerialization dataWithJSONObject:resultMessage options:0 error:&error];
+    NSString *jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
+    [self.commandDelegate evalJs:[NSString stringWithFormat:@"window.easemob.onReciveMessage(%@)",jsonString]];
 }
 - (void)didFinishedReceiveOfflineMessages:(NSArray *)offlineMessages{
     NSLog (@"%@", offlineMessages);
-    if (self.callbackId != nil)
-    {
-        NSMutableArray *resultMessages = [self formatMessages:offlineMessages];
-        NSError  *error;
-        NSData   *jsonData   = [NSJSONSerialization dataWithJSONObject:resultMessages options:0 error:&error];
-        NSString *jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
-        [self.commandDelegate evalJs:[NSString stringWithFormat:@"window.easemob.onReciveOfflineMessages(%@)",jsonString]];
-    }
+    NSMutableArray *resultMessages = [self formatMessages:offlineMessages];
+    NSError  *error;
+    NSData   *jsonData   = [NSJSONSerialization dataWithJSONObject:resultMessages options:0 error:&error];
+    NSString *jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
+    [self.commandDelegate evalJs:[NSString stringWithFormat:@"window.easemob.onReciveOfflineMessages(%@)",jsonString]];
 }
 
 /**
