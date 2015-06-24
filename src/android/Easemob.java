@@ -880,11 +880,11 @@ public class Easemob extends CordovaPlugin {
               if (!EasyUtils.isAppRunningForeground(appContext)) {
                 EMLog.d(TAG, "app is running in backgroud");
                 noifier.onNewMsg(message);
-              } else {
-                String msg = messageToJson(message).toString();
-                fireEvent("ReciveMessage", msg);
-                EMLog.d(TAG, message.toString());
               }
+              //无论是否在前台都要出发到前台
+              String msg = messageToJson(message).toString();
+              fireEvent("ReciveMessage", msg);
+              EMLog.d(TAG, message.toString());
               break;
             case EventOfflineMessage:
               @SuppressWarnings("unchecked")
@@ -893,18 +893,17 @@ public class Easemob extends CordovaPlugin {
               if (!EasyUtils.isAppRunningForeground(appContext)) {
                 EMLog.d(TAG, "received offline messages");
                 noifier.onNewMesg(messages);
-              } else {
-
-                JSONArray mJSONArray = new JSONArray();
-                for (int i = 0; i < messages.size(); i++) {
-                  JSONObject _message = messageToJson(messages
-                      .get(i));
-                  mJSONArray.put(_message);
-                }
-                fireEvent("ReciveMessage",
-                    mJSONArray.toString());
-                EMLog.d(TAG, message.toString());
               }
+              //无论是否在前台都要出发到前台
+              JSONArray mJSONArray = new JSONArray();
+              for (int i = 0; i < messages.size(); i++) {
+                JSONObject _message = messageToJson(messages
+                    .get(i));
+                mJSONArray.put(_message);
+              }
+              fireEvent("ReciveOfflineMessages",
+                  mJSONArray.toString());
+              EMLog.d(TAG, message.toString());
               break;
             // below is just
             // giving a example

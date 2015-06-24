@@ -147,7 +147,7 @@ Easemob.prototype.deleteConversation = function(success,error,params) {
  * 删除会话中的某条聊天记录
  * @param  {Function} success 成功回调函数
  * @param  {Function} error   失败回调函数
- * @param  {Array} params  [target,msgId]
+ * @param  {Array} params  [chatType, target,msgId]
  *                             chatType:消息类型，single(默认),group
                                target:目标用户的用户名或群的id
                                msgId:该消息的id
@@ -161,7 +161,7 @@ Easemob.prototype.deleteMessage = function(success,error,params) {
 //     cordova.exec(success,error,'Easemob','deleteAllConversation',params);
 // };
 /**
- * 获取回话列表
+ * 获取会话列表
  * @param  {Function} success 成功回调函数：群聊信息
  * @param  {Function} error   失败回调函数：错误信息
  * @return {[type]}         [description]
@@ -220,28 +220,35 @@ Easemob.prototype.deleteContact = function(success,error,params) {
 };
 /**
  * 接收消息处理函数
- * @param  {[type]} chat 收到的chat,一条或者多条
+ * @param  {Object} chat 收到的chat,一条或者多条
  * @return {[type]}      [description]
  */
 Easemob.prototype.onReciveMessage = function (chat) {
 }
 /**
+ * 接收离线消息处理函数
+ * @param  {Array} chats 收到的chats,一条或者多条
+ * @return {[type]}      [description]
+ */
+Easemob.prototype.onReciveOfflineMessages = function (chats) {
+}
+/**
  * 点击消息提示框函数
- * @param  {[type]} chat 收到的chat,一条或者多条
+ * @param  {Object} chat 收到的chat,一条或者多条
  * @return {[type]}      [description]
  */
 Easemob.prototype.onClickNotification = function (chat) {
 }
 /**
  * 录音时的函数
- * @param  {[type]} chat 收到的chat,一条或者多条
+ * @param  {int} what     音量大小
  * @return {[type]}      [description]
  */
 Easemob.prototype.onRecord = function (msg) {
 }
 /**
  * 断开连接的函数
- * @param  {String} error :user_removed,connecttion_conflict,server_disconnect,no_network
+ * @param  {String} error 错误信息：user_removed,connecttion_conflict,server_disconnect,no_network
  * @return {[type]}      [description]
  */
 Easemob.prototype.onDisconneted = function (error) {
