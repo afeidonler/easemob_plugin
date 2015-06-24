@@ -25,8 +25,8 @@
 */
 - (void) login:(CDVInvokedUrlCommand *)command
 {
-  NSString* username = [command.arguments objectAtIndex: 0];
-  NSString* password = [command.arguments objectAtIndex: 1];
+  NSString* username = command.arguments[0];
+  NSString* password = command.arguments[1];
 
   [[EaseMob sharedInstance].chatManager asyncLoginWithUsername:username
                                                         password:password
@@ -83,10 +83,10 @@
 - (void) chat:(CDVInvokedUrlCommand *)command
 {
     NSLog(@"%@",command.callbackId);
-    NSDictionary *args = [command.arguments objectAtIndex: 0];
-    NSString* chatType = [args objectForKey: @"chatType"];
-    NSString* target = [args objectForKey: @"target"];
-    NSDictionary *content = [args objectForKey: @"content"];
+    NSDictionary *args = command.arguments[0];
+    NSString* chatType = args[@"chatType"];
+    NSString* target = args[@"target"];
+    NSDictionary *content = args[@"content"];
     EMMessageType messageType;
     if([chatType isEqualToString:@"single"])
     {
@@ -97,10 +97,10 @@
         messageType = eMessageTypeGroupChat;
     }
     EMMessage *tempMessage;
-    NSString *contentType = [args objectForKey:@"contentType"];
+    NSString *contentType = args[@"contentType"];
     if([contentType isEqualToString:@"TXT"])
     {
-        NSString *text = [content objectForKey:@"text"];
+        NSString *text = content[@"text"];
         tempMessage = [ChatSendHelper sendTextMessageWithString:text
                                                      toUsername:target
                                                     messageType:messageType
@@ -109,7 +109,7 @@
     }
     else if([contentType isEqualToString:@"IMAGE"])
     {
-        NSString *path = [content objectForKey:@"filePath"];
+        NSString *path = content[@"filePath"];
         //NSString *referenceURL = [[NSURL fileURLWithPath:path] URLByStandardizingPath];
         NSString *referenceURL = [path substringFromIndex:8];
         //NSURL *urlString = (NSURL *)path;
@@ -125,7 +125,7 @@
     }
     else if([contentType isEqualToString:@"VOICE"])
     {
-        NSString *recordPath = [content objectForKey:@"filePath"];
+        NSString *recordPath = content[@"filePath"];
         EMChatVoice *voice = [[EMChatVoice alloc] initWithFile:recordPath
                                                    displayName:@"audio"];
         tempMessage = [ChatSendHelper sendVoice:voice
@@ -367,7 +367,7 @@
         retGroup[@"isGroup"] = isGroup;
         //最新消息
         if(temp.latestMessage) {
-            retGroup[@"latestMessageFromOthers"] = [self formatMessage:temp.latestMessage];
+            retGroup[@"latestMessage"] = [self formatMessage:temp.latestMessage];
         }
         //未读数
         NSNumber *unreadMessagesCount = @(temp.unreadMessagesCount);
@@ -432,10 +432,8 @@
     resultMessage[@"to"] = tempMessage.to;
     resultMessage[@"from"] = tempMessage.from;
     resultMessage[@"msgId"] = tempMessage.messageId;
-    NSNumber *timestamp = @(tempMessage.timestamp);
-    resultMessage[@"msgTime"] = timestamp;
-    NSNumber *unRead = @(!tempMessage.isRead);
-    resultMessage[@"unRead"] = unRead;
+    resultMessage[@"msgTime"] = @(tempMessage.timestamp);
+    resultMessage[@"unRead"] = @(!tempMessage.isRead);
     //isListened 未找到
     //todo 换实现
     id status ;
