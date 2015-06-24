@@ -1078,7 +1078,7 @@ public class Easemob extends CordovaPlugin {
           .put("isGroup", emConversation.getIsGroup())
           .put("unreadMessagesCount",
               emConversation.getUnreadMsgCount())
-          .put("latestMessageFromOthers",
+          .put("latestMessage",
               messageToJson(emConversation.getLastMessage()));
 
     } catch (JSONException e) {

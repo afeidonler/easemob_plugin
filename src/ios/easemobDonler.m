@@ -311,9 +311,7 @@
     NSString *chatType = command.arguments[0];
     EMMessageType messageType = [self convertToMessageType:chatType];
     NSString *chatter = command.arguments[1];
-    EMConversation *conversation = [[EaseMob sharedInstance].chatManager conversationForChatter:chatter conversationType:messageType];
-    NSString *msgId = command.arguments[2];
-    [conversation removeMessageWithId: msgId];
+    [[EaseMob sharedInstance].chatManager removeConversationByChatter:chatter deleteMessages:YES append2Chat:false];
     CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:commandResult callbackId:command.callbackId];
 }
@@ -379,7 +377,7 @@
 
 - (BOOL)canRecord
 {
-     __block BOOL bCanRecord = YES;
+     __block boo bCanRecord = YES;
      if ([[[UIDevice currentDevice] systemVersion] compare:@"7.0"] != NSOrderedAscending)
      {
          AVAudioSession *audioSession = [AVAudioSession sharedInstance];
