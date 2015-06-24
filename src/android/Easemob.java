@@ -21,6 +21,7 @@ package com.donler.plugin.easemob;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
@@ -83,7 +84,7 @@ public class Easemob extends CordovaPlugin {
   private static Boolean deviceready = false;
 
   enum actionType {
-    INIT, LOGIN, LOGOUT, CHAT, RECORDSTART, RECORDEND, RECORDCANCEL, GETMESSAGES, PAUSE, RESUME, GETUNREADMSGCOUNT, RESETUNRADMSGCOUNT, GETMSGCOUNT, DELETECONVERSATIONS, DELETECONVERSATION, GETGROUPS, GETGROUP, GETCONTACTS, ADDCONTACT, DELETECONTACT, SETTING
+    INIT, LOGIN, LOGOUT, CHAT, RECORDSTART, RECORDEND, RECORDCANCEL, GETMESSAGES, PAUSE, RESUME, GETUNREADMSGCOUNT, RESETUNRADMSGCOUNT, GETMSGCOUNT, CLEARCONVERSATION, DELETECONVERSATION, DELETEMESSAGE, GETGROUPS, GETGROUP, GETCONTACTS, ADDCONTACT, DELETECONTACT, SETTING,GETALLCONVERSATIONS
   }
 
   @SuppressLint("HandlerLeak")
@@ -193,6 +194,7 @@ public class Easemob extends CordovaPlugin {
       break;
     case RESUME:
       isInBackground = false;
+      EMChatManager.getInstance().activityResumed();
       cordova.getThreadPool().execute(new Runnable() {
         public void run() {
           deviceready();
@@ -222,14 +224,19 @@ public class Easemob extends CordovaPlugin {
       conversation = EMChatManager.getInstance().getConversation(target);
       emchatCallbackContext.success(conversation.getMsgCount());
       break;
-    case DELETECONVERSATIONS:
+    case CLEARCONVERSATION:
       target = args.getString(0);
+      //清空和某个user的聊天记录(包括本地)，不删除conversation这个会话对象
       EMChatManager.getInstance().clearConversation(target);
-      // 删除和某个user的整个的聊天记录(包括本地)
-      // EMChatManager.getInstance().deleteConversation(target);
       emchatCallbackContext.success();
       break;
     case DELETECONVERSATION:
+      target = args.getString(0);
+      // 删除和某个user的整个的聊天记录(包括本地)
+      EMChatManager.getInstance().deleteConversation(target);
+      emchatCallbackContext.success();
+      break;
+    case DELETEMESSAGE:
       target = args.getString(0);
       String msgId = args.getString(0);
       // 删除当前会话的某条聊天记录
@@ -326,7 +333,8 @@ public class Easemob extends CordovaPlugin {
     case SETTING:
       dealSetting(args);
       break;
-
+    case GETALLCONVERSATIONS:
+      dealGetConvarsations();
     default:
       return false;
     }
@@ -919,8 +927,34 @@ public class Easemob extends CordovaPlugin {
           };
         });
   }
+  private void dealGetConvarsations() {
+      Hashtable<String, EMConversation> conversations = EMChatManager.getInstance().getAllConversations();
+      JSONArray mJSONArray = new JSONArray();
+      for (int i = 0; i < conversations.size(); i++) {
+        JSONObject conversation = conversationToJson(conversations.get(i));
+        mJSONArray.put(conversation);
+      }
+      PluginResult pluginResult = new PluginResult(
+          PluginResult.Status.OK, mJSONArray);
+      emchatCallbackContext.sendPluginResult(pluginResult);
+    }
 
-  /**
+  private JSONObject conversationToJson(EMConversation emConversation) {
+    JSONObject msgJson = new JSONObject();
+      try {
+    msgJson.put("chatter", emConversation.getUserName())
+          .put("isGroup", emConversation.getIsGroup())
+          .put("unreadMessagesCount", emConversation.getUnreadMsgCount())
+          .put("latestMessageFromOthers", messageToJson(emConversation.getLastMessage()));
+    
+  } catch (JSONException e) {
+    // TODO Auto-generated catch block
+    e.printStackTrace();
+  }
+  return msgJson;
+}
+
+/**
    * 消息转为json格式
    * 
    * @param message

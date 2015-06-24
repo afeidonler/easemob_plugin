@@ -107,23 +107,12 @@ Easemob.prototype.recordCancel = function(success,error) {
 Easemob.prototype.getMessages = function(success,error,params) {
     cordova.exec(success,error,'Easemob','getMessages',params);
 };
-//TODO:
-/**
- * 获取未读消息数
- * @param  {Function} success 成功回调函数：未读消息数
- * @param  {Function} error   失败回调函数（一般不会出现）
- * @param  {Array} params  [target]
-                               target:目标用户的用户名或群的id
- * @return {[type]}         [description]
- */
-Easemob.prototype.getUnreadMsgCount = function(success,error,params) {
-    cordova.exec(success,error,'Easemob','getUnreadMsgCount',params);
-};
 /**
  * 清零未读消息数
  * @param  {Function} success 成功回调函数
  * @param  {Function} error   失败回调函数（一般不会出现）
- * @param  {Array} params  [target]
+ * @param  {Array} params  [chatType, target]
+ *                             chatType:消息类型，single(默认),group
                                target:目标用户的用户名或群的id，不存在则清零所有回话的未读消息
  * @return {[type]}         [description]
  */
@@ -131,43 +120,55 @@ Easemob.prototype.resetUnreadMsgCount = function(success,error,params) {
     cordova.exec(success,error,'Easemob','resetUnreadMsgCount',params);
 };
 /**
- * 获取消息总数
- * @param  {Function} success 成功回调函数：消息总数
- * @param  {Function} error   失败回调函数
- * @param  {Array} params  [target]
-                               target:目标用户的用户名或群的id
- * @return {[type]}         [description]
- */
-Easemob.prototype.getMsgCount = function(success,error,params) {
-    cordova.exec(success,error,'Easemob','getMsgCount',params);
-};
-/**
  * 清空会话聊天记录
  * @param  {Function} success 成功回调函数
  * @param  {Function} error   失败回调函数
- * @param  {Array} params  [target，msgId]
+ * @param  {Array} params  [chatType, target]
+ *                             chatType:消息类型，single(默认),group
                                target:目标用户的用户名或群的id
  * @return {[type]}         [description]
  */
-Easemob.prototype.deleteConversations = function(success,error,params) {
+Easemob.prototype.clearConversations = function(success,error,params) {
     cordova.exec(success,error,'Easemob','clearConversation',params);
 };
 /**
- * 删除会话某条聊天记录
+ * 删除聊天记录及会话对象
  * @param  {Function} success 成功回调函数
  * @param  {Function} error   失败回调函数
- * @param  {Array} params  [target，msgId]
+ * @param  {Array} params  [chatType, target]
+ *                             chatType:消息类型，single(默认),group
                                target:目标用户的用户名或群的id
-                               msgId:可选，如果存在则为删除某一条
  * @return {[type]}         [description]
  */
 Easemob.prototype.deleteConversation = function(success,error,params) {
     cordova.exec(success,error,'Easemob','deleteConversation',params);
 };
-//删除所有回话记录（比较恐怖，还是不加了吧）
+/**
+ * 删除会话中的某条聊天记录
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @param  {Array} params  [target,msgId]
+ *                             chatType:消息类型，single(默认),group
+                               target:目标用户的用户名或群的id
+                               msgId:该消息的id
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.deleteMessage = function(success,error,params) {
+    cordova.exec(success,error,'Easemob','deleteMessage',params);
+};
+//删除所有会话记录（比较恐怖，还是不加了吧）
 // Easemob.prototype.deleteAllConversation = function(success,error,params) {
 //     cordova.exec(success,error,'Easemob','deleteAllConversation',params);
 // };
+/**
+ * 获取回话列表
+ * @param  {Function} success 成功回调函数：群聊信息
+ * @param  {Function} error   失败回调函数：错误信息
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.getAllConversations = function(success,error) {
+    cordova.exec(success,error,'Easemob','getAllConversations',[]);
+};
 /**
  * 获取群聊列表
  * @param  {Function} success 成功回调函数：群聊列表
