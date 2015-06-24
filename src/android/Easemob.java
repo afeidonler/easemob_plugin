@@ -943,8 +943,7 @@ public class Easemob extends CordovaPlugin {
           .put("msgId", message.getMsgId())
           .put("chatType", message.getChatType())
           .put("unRead", message.isUnread())
-          .put("isListened", message.isListened())
-          .put("userName", message.getUserName());
+          .put("isListened", message.isListened());
 
       JSONObject body = new JSONObject();
 
@@ -955,7 +954,7 @@ public class Easemob extends CordovaPlugin {
         body.put("localUrl", voiceBody.getLocalUrl())
             .put("remoteUrl", voiceBody.getRemoteUrl())
             .put("name", voiceBody.getFileName())
-            .put("size", voiceBody.getLength());
+            .put("duration", voiceBody.getLength());
         break;
       case IMAGE:
         ImageMessageBody imageBody = (ImageMessageBody) message
@@ -993,7 +992,6 @@ public class Easemob extends CordovaPlugin {
       try {
         msgJson.put("extend", message.getJSONObjectAttribute("extend"));
       } catch (EaseMobException e) {
-        e.printStackTrace();
       }
       msgJson.put("body", body);
     } catch (JSONException e) {
