@@ -239,6 +239,13 @@ Easemob.prototype.onClickNotification = function (chat) {
  */
 Easemob.prototype.onRecord = function (msg) {
 }
+/**
+ * 断开连接的函数
+ * @param  {String} error :user_removed,connecttion_conflict,server_disconnect,no_network
+ * @return {[type]}      [description]
+ */
+Easemob.prototype.onDisconneted = function (error) {
+}
 var easemob = new Easemob();
 channel.onCordovaReady.subscribe( function () {
     // The cordova device plugin is ready now

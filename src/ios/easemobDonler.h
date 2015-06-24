@@ -32,4 +32,6 @@
 - (void) clearConversation: (CDVInvokedUrlCommand *)command;
 
 - (void) deleteConversation: (CDVInvokedUrlCommand *)command;
+
+- (void) deleteMessage: (CDVInvokedUrlCommand *)command;
 @end

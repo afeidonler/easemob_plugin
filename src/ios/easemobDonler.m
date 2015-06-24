@@ -303,11 +303,24 @@
     CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:commandResult callbackId:command.callbackId];
 }
-
+/**
+* 删除会话及聊天记录
+*/
+- (void) deleteConversation: (CDVInvokedUrlCommand *)command
+{
+    NSString *chatType = command.arguments[0];
+    EMMessageType messageType = [self convertToMessageType:chatType];
+    NSString *chatter = command.arguments[1];
+    EMConversation *conversation = [[EaseMob sharedInstance].chatManager conversationForChatter:chatter conversationType:messageType];
+    NSString *msgId = command.arguments[2];
+    [conversation removeMessageWithId: msgId];
+    CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:commandResult callbackId:command.callbackId];
+}
 /**
 * 删除会话某条聊天记录
 */
-- (void) deleteConversation: (CDVInvokedUrlCommand *)command
+- (void) deleteMessage: (CDVInvokedUrlCommand *)command
 {
     NSString *chatType = command.arguments[0];
     EMMessageType messageType = [self convertToMessageType:chatType];

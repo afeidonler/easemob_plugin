@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -35,6 +36,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.easemob.EMCallBack;
+import com.easemob.EMConnectionListener;
+import com.easemob.EMError;
 import com.easemob.EMEventListener;
 import com.easemob.EMNotifierEvent;
 import com.easemob.EMValueCallBack;
@@ -48,12 +51,14 @@ import com.easemob.chat.EMMessage;
 import com.easemob.chat.EMMessage.ChatType;
 import com.easemob.chat.EMMessage.Type;
 import com.easemob.chat.EMChat;
+import com.easemob.chat.GroupChangeListener;
 import com.easemob.chat.ImageMessageBody;
 import com.easemob.chat.LocationMessageBody;
 import com.easemob.chat.NormalFileMessageBody;
 import com.easemob.chat.TextMessageBody;
 import com.easemob.chat.VoiceMessageBody;
 import com.easemob.exceptions.EaseMobException;
+import com.easemob.util.NetUtils;
 import com.easemob.util.VoiceRecorder;
 import com.easemob.util.EMLog;
 import com.easemob.util.EasyUtils;
@@ -84,7 +89,7 @@ public class Easemob extends CordovaPlugin {
   private static Boolean deviceready = false;
 
   enum actionType {
-    INIT, LOGIN, LOGOUT, CHAT, RECORDSTART, RECORDEND, RECORDCANCEL, GETMESSAGES, PAUSE, RESUME, GETUNREADMSGCOUNT, RESETUNRADMSGCOUNT, GETMSGCOUNT, CLEARCONVERSATION, DELETECONVERSATION, DELETEMESSAGE, GETGROUPS, GETGROUP, GETCONTACTS, ADDCONTACT, DELETECONTACT, SETTING,GETALLCONVERSATIONS
+    INIT, LOGIN, LOGOUT, CHAT, RECORDSTART, RECORDEND, RECORDCANCEL, GETMESSAGES, PAUSE, RESUME, GETUNREADMSGCOUNT, RESETUNRADMSGCOUNT, GETMSGCOUNT, CLEARCONVERSATION, DELETECONVERSATION, DELETEMESSAGE, GETGROUPS, GETGROUP, GETCONTACTS, ADDCONTACT, DELETECONTACT, SETTING, GETALLCONVERSATIONS
   }
 
   @SuppressLint("HandlerLeak")
@@ -226,7 +231,7 @@ public class Easemob extends CordovaPlugin {
       break;
     case CLEARCONVERSATION:
       target = args.getString(0);
-      //清空和某个user的聊天记录(包括本地)，不删除conversation这个会话对象
+      // 清空和某个user的聊天记录(包括本地)，不删除conversation这个会话对象
       EMChatManager.getInstance().clearConversation(target);
       emchatCallbackContext.success();
       break;
@@ -813,13 +818,13 @@ public class Easemob extends CordovaPlugin {
         // 设置是否启用新消息提醒(打开或者关闭消息声音和震动提示)
         chatOptions.setNotifyBySoundAndVibrate(params
             .getBoolean("NotifyBySoundAndVibrate")); // 默认为true
-                                  // 开启新消息提醒
+        // 开启新消息提醒
       }
       if (params.has("NoticeBySound")) {
         // 设置是否启用新消息声音提醒
         chatOptions
             .setNoticeBySound(params.getBoolean("NoticeBySound")); // 默认为true
-                                        // 开启声音提醒
+        // 开启声音提醒
 
       }
       if (params.has("NoticedByVibrate")) {
@@ -830,13 +835,13 @@ public class Easemob extends CordovaPlugin {
       if (params.has("UseSpeaker")) {
         // 设置语音消息播放是否设置为扬声器播放
         chatOptions.setUseSpeaker(params.getBoolean("UseSpeaker")); // 默认为true
-                                      // 开启新消息提醒
+        // 开启新消息提醒
       }
       if (params.has("ShowNotificationInBackgroud")) {
         // 设置后台接收新消息时是否通通知栏提示
         chatOptions.setShowNotificationInBackgroud(params
             .getBoolean("ShowNotificationInBackgroud")); // 默认为true
-                                    // 开启新消息提醒
+        // 开启新消息提醒
       }
       emchatCallbackContext.success("设置成功");
     } catch (JSONException e) {
@@ -848,7 +853,7 @@ public class Easemob extends CordovaPlugin {
 
   private void bindListener() {
     noifier = new HXNotifier();
-    noifier.init(cordova.getActivity().getApplicationContext());
+    noifier.init(mainActivity.getApplicationContext());
     // EMChatOptions chatOptions = EMChatManager.getInstance()
     // .getChatOptions();
     // chatOptions.setOnNotificationClickListener(getOnNotificationClickListener());
@@ -861,8 +866,7 @@ public class Easemob extends CordovaPlugin {
           @Override
           public void onEvent(EMNotifierEvent event) {
             EMMessage message = null;
-            Context appContext = cordova.getActivity()
-                .getApplicationContext();
+            Context appContext = mainActivity.getApplicationContext();
             if (event.getData() instanceof EMMessage) {
               message = (EMMessage) event.getData();
               EMLog.d(TAG,
@@ -926,35 +930,165 @@ public class Easemob extends CordovaPlugin {
             }
           };
         });
+    // 注册一个监听连接状态的listener
+    EMChatManager.getInstance().addConnectionListener(
+        new MyConnectionListener());
+
+    EMGroupManager.getInstance().addGroupChangeListener(
+        new MyGroupChangeListener());
+
   }
-  private void dealGetConvarsations() {
-      Hashtable<String, EMConversation> conversations = EMChatManager.getInstance().getAllConversations();
-      JSONArray mJSONArray = new JSONArray();
-      for (int i = 0; i < conversations.size(); i++) {
-        JSONObject conversation = conversationToJson(conversations.get(i));
-        mJSONArray.put(conversation);
+
+  private class MyGroupChangeListener implements GroupChangeListener {
+
+    @Override
+    public void onInvitationReceived(String groupId, String groupName,
+        String inviter, String reason) {
+
+      // 收到加入群聊的邀请
+
+      boolean hasGroup = false;
+      for (EMGroup group : EMGroupManager.getInstance().getAllGroups()) {
+        if (group.getGroupId().equals(groupId)) {
+          hasGroup = true;
+          break;
+        }
       }
-      PluginResult pluginResult = new PluginResult(
-          PluginResult.Status.OK, mJSONArray);
-      emchatCallbackContext.sendPluginResult(pluginResult);
+      if (!hasGroup)
+        return;
+
+      // 被邀请
+      EMMessage msg = EMMessage.createReceiveMessage(Type.TXT);
+      msg.setChatType(ChatType.GroupChat);
+      msg.setFrom(inviter);
+      msg.setTo(groupId);
+      msg.setMsgId(UUID.randomUUID().toString());
+      msg.addBody(new TextMessageBody(inviter + "邀请你加入了群聊"));
+      // 保存邀请消息
+      EMChatManager.getInstance().saveMessage(msg);
+      String _msg = messageToJson(msg).toString();
+      fireEvent("ReciveMessage", _msg);
+
     }
+
+    @Override
+    public void onInvitationAccpted(String groupId, String inviter,
+        String reason) {
+      // 群聊邀请被接受
+    }
+
+    @Override
+    public void onInvitationDeclined(String groupId, String invitee,
+        String reason) {
+      // 群聊邀请被拒绝
+    }
+
+    @Override
+    public void onUserRemoved(String groupId, String groupName) {
+      // 当前用户被管理员移除出群聊
+
+    }
+
+    @Override
+    public void onGroupDestroy(String groupId, String groupName) {
+      // 群聊被创建者解散
+      // 提示用户群被解散
+
+    }
+
+    @Override
+    public void onApplicationReceived(String groupId, String groupName,
+        String applyer, String reason) {
+      // 用户申请加入群聊，收到加群申请
+    }
+
+    @Override
+    public void onApplicationAccept(String groupId, String groupName,
+        String accepter) {
+      // // 加群申请被同意
+      // EMMessage msg = EMMessage.createReceiveMessage(Type.TXT);
+      // msg.setChatType(ChatType.GroupChat);
+      // msg.setFrom(accepter);
+      // msg.setTo(groupId);
+      // msg.setMsgId(UUID.randomUUID().toString());
+      // msg.addBody(new TextMessageBody(accepter + "同意了你的群聊申请"));
+      // // 保存同意消息
+      // EMChatManager.getInstance().saveMessage(msg);
+      // // 提醒新消息
+      // EMNotifier.getInstance(getApplicationContext()).notifyOnNewMsg();
+    }
+
+    @Override
+    public void onApplicationDeclined(String groupId, String groupName,
+        String decliner, String reason) {
+      // 加群申请被拒绝
+    }
+
+  }
+
+  // 实现ConnectionListener接口
+  private class MyConnectionListener implements EMConnectionListener {
+    @Override
+    public void onConnected() {
+    }
+
+  @Override
+  public void onDisconnected(final int error) {
+    cordova.getThreadPool().execute(new Runnable() {
+      @Override
+          public void run() {
+            if(error == EMError.USER_REMOVED){
+              // 显示帐号已经被移除
+          fireEvent("Disconneted", "user_removed");
+          }else if (error == EMError.CONNECTION_CONFLICT) {
+            // 显示帐号在其他设备登陆
+          fireEvent("Disconneted", "connecttion_conflict");
+          } else {
+            if (NetUtils.hasNetwork(mainActivity)) {
+            //连接不到聊天服务器
+              fireEvent("Disconneted", "server_disconnect");
+            }
+            else{
+            //当前网络不可用，请检查网络设置
+              fireEvent("Disconneted", "no_network");
+             }
+          }
+      }
+        });
+    }
+  }
+
+  private void dealGetConvarsations() {
+    Hashtable<String, EMConversation> conversations = EMChatManager
+        .getInstance().getAllConversations();
+    JSONArray mJSONArray = new JSONArray();
+    for (int i = 0; i < conversations.size(); i++) {
+      JSONObject conversation = conversationToJson(conversations.get(i));
+      mJSONArray.put(conversation);
+    }
+    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK,
+        mJSONArray);
+    emchatCallbackContext.sendPluginResult(pluginResult);
+  }
 
   private JSONObject conversationToJson(EMConversation emConversation) {
     JSONObject msgJson = new JSONObject();
-      try {
-    msgJson.put("chatter", emConversation.getUserName())
+    try {
+      msgJson.put("chatter", emConversation.getUserName())
           .put("isGroup", emConversation.getIsGroup())
-          .put("unreadMessagesCount", emConversation.getUnreadMsgCount())
-          .put("latestMessageFromOthers", messageToJson(emConversation.getLastMessage()));
-    
-  } catch (JSONException e) {
-    // TODO Auto-generated catch block
-    e.printStackTrace();
-  }
-  return msgJson;
-}
+          .put("unreadMessagesCount",
+              emConversation.getUnreadMsgCount())
+          .put("latestMessageFromOthers",
+              messageToJson(emConversation.getLastMessage()));
 
-/**
+    } catch (JSONException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    return msgJson;
+  }
+
+  /**
    * 消息转为json格式
    * 
    * @param message
@@ -993,12 +1127,11 @@ public class Easemob extends CordovaPlugin {
       case IMAGE:
         ImageMessageBody imageBody = (ImageMessageBody) message
             .getBody();
-          body.put("localUrl", imageBody.getLocalUrl())
-              .put("remoteUrl", imageBody.getRemoteUrl())
-              .put("thumbnailUrl", imageBody.getThumbnailUrl())
-              .put("with", imageBody.getWidth())
-              .put("height", imageBody.getHeight());
-          
+        body.put("localUrl", imageBody.getLocalUrl())
+            .put("remoteUrl", imageBody.getRemoteUrl())
+            .put("thumbnailUrl", imageBody.getThumbnailUrl())
+            .put("with", imageBody.getWidth())
+            .put("height", imageBody.getHeight());
 
         break;
       case LOCATION:
