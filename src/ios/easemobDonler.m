@@ -243,7 +243,7 @@
 /**
 * 获取会话列表
 */
-- (void) getGroups: (CDVInvokedUrlCommand *)command
+- (void) getAllConversations: (CDVInvokedUrlCommand *)command
 {
     NSMutableArray *chatListResult = [self formatChatList];
     CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:chatListResult];

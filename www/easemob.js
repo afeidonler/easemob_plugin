@@ -220,7 +220,7 @@ Easemob.prototype.deleteContact = function(success,error,params) {
 };
 /**
  * 接收消息处理函数
- * @param  {Object} chat 收到的chat,一条或者多条
+ * @param  {Object} chat 收到的chat,一条
  * @return {[type]}      [description]
  */
 Easemob.prototype.onReciveMessage = function (chat) {
@@ -234,14 +234,14 @@ Easemob.prototype.onReciveOfflineMessages = function (chats) {
 }
 /**
  * 点击消息提示框函数
- * @param  {Object} chat 收到的chat,一条或者多条
+ * @param  {Object/Array} chat 收到的chat,一条或者多条
  * @return {[type]}      [description]
  */
 Easemob.prototype.onClickNotification = function (chat) {
 }
 /**
  * 录音时的函数
- * @param  {int} what     音量大小
+ * @param  {object} msg   {what:音量大小}
  * @return {[type]}      [description]
  */
 Easemob.prototype.onRecord = function (msg) {

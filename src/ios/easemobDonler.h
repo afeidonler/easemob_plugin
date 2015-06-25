@@ -23,7 +23,7 @@
 
 - (void) recordcancel: (CDVInvokedUrlCommand *)command;
 
-- (void) getGroups: (CDVInvokedUrlCommand *)command;
+- (void) getAllConversations: (CDVInvokedUrlCommand *)command;
 
 - (void) getMessages: (CDVInvokedUrlCommand *)command;
 
