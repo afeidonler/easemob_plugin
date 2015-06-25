@@ -367,7 +367,7 @@
 
 - (BOOL)canRecord
 {
-     __block boo bCanRecord = YES;
+     __block bool bCanRecord = YES;
      if ([[[UIDevice currentDevice] systemVersion] compare:@"7.0"] != NSOrderedAscending)
      {
          AVAudioSession *audioSession = [AVAudioSession sharedInstance];
