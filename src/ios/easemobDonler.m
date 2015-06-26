@@ -367,7 +367,7 @@
 
 - (BOOL)canRecord
 {
-     __block bool bCanRecord = YES;
+     __block BOOL bCanRecord = YES;
      if ([[[UIDevice currentDevice] systemVersion] compare:@"7.0"] != NSOrderedAscending)
      {
          AVAudioSession *audioSession = [AVAudioSession sharedInstance];
@@ -416,6 +416,7 @@
         }
     }
     //基本属性
+    
     resultMessage[@"chatType"] = type;
     resultMessage[@"to"] = tempMessage.to;
     resultMessage[@"from"] = tempMessage.from;
@@ -451,6 +452,7 @@
 
     //body
     id<IEMMessageBody> msgBody = tempMessage.messageBodies.firstObject;
+    resultMessage[@"type"] = [self formatType:msgBody.messageBodyType];
     NSMutableDictionary *messageBody = [NSMutableDictionary dictionaryWithCapacity:10];;
     switch (msgBody.messageBodyType) {
         case eMessageBodyType_Text:{
@@ -507,6 +509,28 @@
     }
     messageBody ? resultMessage[@"body"] = messageBody : nil;
     return resultMessage;
+}
+/**
+ * 转换消息类型辅助函数
+ */
+- (NSString *)formatType: (NSInteger)messageBodyType
+{
+    NSString *type;
+    switch (messageBodyType) {
+        case eMessageBodyType_Text:
+            type = @"TXT";
+            break;
+        case eMessageBodyType_Image:
+            type = @"IMAGE";
+            break;
+        case eMessageBodyType_Voice:
+            type = @"VOICE";
+            break;
+        default:
+            type = @"OTHERS";
+            break;
+    }
+    return type;
 }
 
 @end
