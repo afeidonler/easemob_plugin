@@ -36,7 +36,7 @@
              //获取群组列表
              // [[EaseMob sharedInstance].chatManager asyncFetchMyGroupsList];
              
-             //设置是否自动登录
+             //设置是否自动登录 
              [[EaseMob sharedInstance].chatManager setIsAutoLoginEnabled:YES];
 
              CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
@@ -411,15 +411,23 @@
             type = @"GroupChat";
         };
         break;
+        case eMessageTypeChatRoom:{
+            type = @"ChatRoom";
+        };
         default: {
             type = @"?";
         }
     }
     //基本属性
-    
     resultMessage[@"chatType"] = type;
-    resultMessage[@"to"] = tempMessage.to;
-    resultMessage[@"from"] = tempMessage.from;
+    if ([type isEqualToString:@"Chat"]) {
+        resultMessage[@"to"] = tempMessage.to;
+        resultMessage[@"from"] = tempMessage.from;
+    }
+    else {
+        resultMessage[@"to"] = tempMessage.from;
+        resultMessage[@"from"] = tempMessage.groupSenderName;
+    }
     resultMessage[@"msgId"] = tempMessage.messageId;
     resultMessage[@"msgTime"] = @(tempMessage.timestamp);
     resultMessage[@"unRead"] = @(!tempMessage.isRead);
@@ -532,5 +540,6 @@
     }
     return type;
 }
+
 
 @end
