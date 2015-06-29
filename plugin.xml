@@ -204,6 +204,8 @@
         <header-file src="src/ios/relative/EaseMob.h" />
         <header-file src="src/ios/ChatSendHelper.h" />
         <source-file src="src/ios/ChatSendHelper.m" />
+        <header-file src="src/ios/Appdelegate+easemobDonler.h" />
+        <source-file src="src/ios/Appdelegate+easemobDonler.m" />
         <header-file src="src/ios/easemobDonler.h" />
         <source-file src="src/ios/easemobDonler.m" />
 

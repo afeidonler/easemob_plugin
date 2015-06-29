@@ -11,9 +11,6 @@
 
 - (void) init:(CDVInvokedUrlCommand *)command
 {
-    [[EaseMob sharedInstance] registerSDKWithAppKey:@"donler#donlerapp"
-     apnsCertName:@"55yali"
-      otherConfig:@{kSDKConfigEnableConsoleLogger:[NSNumber numberWithBool:YES]}];
     [EMCDDeviceManager sharedInstance].delegate = self;
     [[EaseMob sharedInstance].chatManager removeDelegate:self];
     [[EaseMob sharedInstance].chatManager addDelegate:self delegateQueue:nil];
@@ -24,10 +21,10 @@
 */
 - (void) login:(CDVInvokedUrlCommand *)command
 {
-  NSString* username = command.arguments[0];
-  NSString* password = command.arguments[1];
+    NSString* username = command.arguments[0];
+    NSString* password = command.arguments[1];
 
-  [[EaseMob sharedInstance].chatManager asyncLoginWithUsername:username
+    [[EaseMob sharedInstance].chatManager asyncLoginWithUsername:username
                                                         password:password
                                                       completion:
      ^(NSDictionary *loginInfo, EMError *error) {
@@ -367,18 +364,18 @@
 
 - (BOOL)canRecord
 {
-     __block BOOL bCanRecord = YES;
-     if ([[[UIDevice currentDevice] systemVersion] compare:@"7.0"] != NSOrderedAscending)
-     {
-         AVAudioSession *audioSession = [AVAudioSession sharedInstance];
-         if ([audioSession respondsToSelector:@selector(requestRecordPermission:)]) {
-             [audioSession performSelector:@selector(requestRecordPermission:) withObject:^(BOOL granted) {
-                 bCanRecord = granted;
-             }];
-         }
-     }
+    __block BOOL bCanRecord = YES;
+    if ([[[UIDevice currentDevice] systemVersion] compare:@"7.0"] != NSOrderedAscending)
+    {
+        AVAudioSession *audioSession = [AVAudioSession sharedInstance];
+        if ([audioSession respondsToSelector:@selector(requestRecordPermission:)]) {
+            [audioSession performSelector:@selector(requestRecordPermission:) withObject:^(BOOL granted) {
+                bCanRecord = granted;
+            }];
+        }
+    }
 
-     return bCanRecord;
+    return bCanRecord;
 }
 
 /**
@@ -518,9 +515,7 @@
     messageBody ? resultMessage[@"body"] = messageBody : nil;
     return resultMessage;
 }
-/**
- * 转换消息类型辅助函数
- */
+
 - (NSString *)formatType: (NSInteger)messageBodyType
 {
     NSString *type;
