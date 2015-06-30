@@ -34,4 +34,6 @@
 - (void) deleteConversation: (CDVInvokedUrlCommand *)command;
 
 - (void) deleteMessage: (CDVInvokedUrlCommand *)command;
+
+- (void) downloadMessage: (CDVInvokedUrlCommand *)command;
 @end

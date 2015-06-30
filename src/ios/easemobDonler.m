@@ -83,7 +83,6 @@
 */
 - (void) chat:(CDVInvokedUrlCommand *)command
 {
-    NSLog(@"%@",command.callbackId);
     NSDictionary *args = command.arguments[0];
     NSString* chatType = args[@"chatType"];
     NSString* target = args[@"target"];
@@ -131,7 +130,6 @@
     {
 
     }
-
     NSMutableDictionary *resultMessage = [self formatMessage:tempMessage];
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary: resultMessage];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -238,6 +236,19 @@
     [self.commandDelegate evalJs:[NSString stringWithFormat:@"window.easemob.onReciveOfflineMessages(%@)",jsonString]];
 }
 
+
+/**
+* 消息发送返回结果
+*/
+-(void)didSendMessage:(EMMessage *)message error:(EMError *)error
+{
+    NSMutableDictionary *resultMessage = [self formatMessage:message];
+    NSError  *jerror;
+    NSData   *jsonData   = [NSJSONSerialization dataWithJSONObject:resultMessage options:0 error:&jerror];
+    NSString *jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
+    [self.commandDelegate evalJs:[NSString stringWithFormat:@"window.easemob.onReciveMessage(%@)",jsonString]];
+}
+
 /**
 * 获取会话列表
 */
@@ -247,21 +258,6 @@
     CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:chatListResult];
     [self.commandDelegate sendPluginResult:commandResult callbackId:command.callbackId];
 }
-
-/**
-* 消息发送返回结果
-*/
--(void)didSendMessage:(EMMessage *)message error:(EMError *)error
-{
-    NSLog(@"%@",error);
-    NSLog (@"%@", message);
-    NSMutableDictionary *resultMessage = [self formatMessage:message];
-    NSError  *jerror;
-    NSData   *jsonData   = [NSJSONSerialization dataWithJSONObject:resultMessage options:0 error:&jerror];
-    NSString *jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
-    [self.commandDelegate evalJs:[NSString stringWithFormat:@"window.easemob.onReciveMessage(%@)",jsonString]];
-}
-
 
 /**
 * 获取某会话的聊天记录
@@ -331,6 +327,33 @@
     [conversation removeMessageWithId: msgId];
     CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:commandResult callbackId:command.callbackId];
+}
+
+/**
+* 下载附件,返回新的message对象.
+*/
+- (void) downloadMessage: (CDVInvokedUrlCommand *)command
+{
+    NSString *chatType = command.arguments[0];
+    EMMessageType messageType = [self convertToMessageType:chatType];
+    NSString *chatter = command.arguments[1];
+    EMConversation *conversation = [[EaseMob sharedInstance].chatManager conversationForChatter:chatter conversationType:messageType];
+    NSString *msgId = command.arguments[2];
+    EMMessage *message = [conversation loadMessageWithId:msgId];
+    id <IChatManager> chatManager = [[EaseMob sharedInstance] chatManager];
+    [chatManager asyncFetchMessage:message progress:nil completion:^(EMMessage *aMessage, EMError *error) {
+        if(!error)
+        {
+            NSMutableDictionary *resultMessage = [self formatMessage:aMessage];
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary: resultMessage];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        }
+        else
+        {
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        }
+    }onQueue:nil];
 }
 
 /**
@@ -447,38 +470,19 @@
     }
     //基本属性
     resultMessage[@"chatType"] = type;
-//    if ([type isEqualToString:@"Chat"]) {
+    if ([type isEqualToString:@"Chat"] || tempMessage.deliveryState==eMessageDeliveryState_Delivering) {
         resultMessage[@"to"] = tempMessage.to;
         resultMessage[@"from"] = tempMessage.from;
-//    }
-//    else {
-//        resultMessage[@"to"] = tempMessage.from;
-//        resultMessage[@"from"] = tempMessage.groupSenderName;
-//    }
+    }
+    else {
+        resultMessage[@"to"] = tempMessage.from;
+        resultMessage[@"from"] = tempMessage.groupSenderName;
+    }
     resultMessage[@"msgId"] = tempMessage.messageId;
     resultMessage[@"msgTime"] = @(tempMessage.timestamp);
     resultMessage[@"unRead"] = @(!tempMessage.isRead);
     //isListened 未找到
-    //todo 换实现
-    id status ;
-    switch (tempMessage.deliveryState) {
-        case eMessageDeliveryState_Pending:{
-            status = @"CREATE";
-        };
-        break;
-        case eMessageDeliveryState_Delivering:{
-            status = @"INPROGRESS";
-        };
-        break;
-        case eMessageDeliveryState_Delivered:{
-            status = @"SUCCESS";
-        };
-        break;
-        case eMessageDeliveryState_Failure:{
-            status = @"FAIL";
-        };
-        break;
-    }
+    id status = [self formatState:tempMessage.deliveryState];
     resultMessage[@"status"] = status;
     NSNumber *isAcked = @(!tempMessage.isReadAcked);
     resultMessage[@"isAcked"] = isAcked;
@@ -546,6 +550,36 @@
     return resultMessage;
 }
 
+/**
+* 格式化发送状态
+*/
+- (NSString *)formatState: (NSInteger)deliveryState
+{
+    NSString *status;
+    switch (deliveryState) {
+        case eMessageDeliveryState_Pending:{
+            status = @"CREATE";
+        };
+            break;
+        case eMessageDeliveryState_Delivering:{
+            status = @"INPROGRESS";
+        };
+            break;
+        case eMessageDeliveryState_Delivered:{
+            status = @"SUCCESS";
+        };
+            break;
+        case eMessageDeliveryState_Failure:{
+            status = @"FAIL";
+        };
+            break;
+    }
+    return status;
+}
+
+/**
+* 格式化消息类型
+*/
 - (NSString *)formatType: (NSInteger)messageBodyType
 {
     NSString *type;
@@ -565,6 +599,5 @@
     }
     return type;
 }
-
 
 @end
