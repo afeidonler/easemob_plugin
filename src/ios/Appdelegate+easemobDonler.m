@@ -11,6 +11,7 @@
     original = class_getInstanceMethod(self, @selector(init));
     swizzled = class_getInstanceMethod(self, @selector(swizzled_init));
     method_exchangeImplementations(original, swizzled);
+    
 }
 
 - (AppDelegate *)swizzled_init
@@ -39,10 +40,7 @@
     }
     [self registerRemoteNotification];
 
-    [[EaseMob sharedInstance] registerSDKWithAppKey:@"donler#donlerapp"
-                                       apnsCertName:@"55yali"
-                                        otherConfig:@{kSDKConfigEnableConsoleLogger:[NSNumber numberWithBool:YES]}];
-
+    
 }
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken

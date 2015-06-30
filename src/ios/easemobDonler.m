@@ -11,9 +11,14 @@
 
 - (void) init:(CDVInvokedUrlCommand *)command
 {
+    [[EaseMob sharedInstance] registerSDKWithAppKey:@"maggie03230#maggieapp"
+                                       apnsCertName:@"55yali"
+                                        otherConfig:@{kSDKConfigEnableConsoleLogger:[NSNumber numberWithBool:YES]}];
+
     [EMCDDeviceManager sharedInstance].delegate = self;
     [[EaseMob sharedInstance].chatManager removeDelegate:self];
     [[EaseMob sharedInstance].chatManager addDelegate:self delegateQueue:nil];
+    
 }
 
 /**
@@ -41,7 +46,7 @@
          }
          else
          {
-             NSString *errorMessage = [NSString stringWithFormat:@"%@",error.errorCode];
+             NSString *errorMessage = [NSString stringWithFormat:@"%ld",(long)error.errorCode];
              CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errorMessage];
              [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
          }
@@ -66,7 +71,7 @@
         }
         else
         {
-            NSString *errorMessage = [NSString stringWithFormat:@"%@",error.errorCode];
+            NSString *errorMessage = [NSString stringWithFormat:@"%ld",(long)error.errorCode];
             CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errorMessage];
             [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
         }
@@ -83,15 +88,7 @@
     NSString* chatType = args[@"chatType"];
     NSString* target = args[@"target"];
     NSDictionary *content = args[@"content"];
-    EMMessageType messageType;
-    if([chatType isEqualToString:@"single"])
-    {
-        messageType = eMessageTypeChat;
-    }
-    else
-    {
-        messageType = eMessageTypeGroupChat;
-    }
+    EMMessageType messageType = [self convertToMessageType:chatType];
     EMMessage *tempMessage;
     NSString *contentType = args[@"contentType"];
     if([contentType isEqualToString:@"TXT"])
@@ -228,6 +225,10 @@
     NSString *jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
     [self.commandDelegate evalJs:[NSString stringWithFormat:@"window.easemob.onReciveMessage(%@)",jsonString]];
 }
+
+/**
+* 收到离线消息
+*/
 - (void)didFinishedReceiveOfflineMessages:(NSArray *)offlineMessages{
     NSLog (@"%@", offlineMessages);
     NSMutableArray *resultMessages = [self formatMessages:offlineMessages];
@@ -246,6 +247,21 @@
     CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:chatListResult];
     [self.commandDelegate sendPluginResult:commandResult callbackId:command.callbackId];
 }
+
+/**
+* 消息发送返回结果
+*/
+-(void)didSendMessage:(EMMessage *)message error:(EMError *)error
+{
+    NSLog(@"%@",error);
+    NSLog (@"%@", message);
+    NSMutableDictionary *resultMessage = [self formatMessage:message];
+    NSError  *jerror;
+    NSData   *jsonData   = [NSJSONSerialization dataWithJSONObject:resultMessage options:0 error:&jerror];
+    NSString *jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
+    [self.commandDelegate evalJs:[NSString stringWithFormat:@"window.easemob.onReciveMessage(%@)",jsonString]];
+}
+
 
 /**
 * 获取某会话的聊天记录
@@ -340,10 +356,24 @@
 - (NSMutableArray *)formatChatList
 {
     NSArray *chatList = [[EaseMob sharedInstance].chatManager loadAllConversationsFromDatabaseWithAppend2Chat:NO];
+    //排序
+    NSArray* sorte = [chatList sortedArrayUsingComparator:
+            ^(EMConversation *obj1, EMConversation* obj2){
+                EMMessage *message1 = [obj1 latestMessage];
+                EMMessage *message2 = [obj2 latestMessage];
+                if(message1.timestamp > message2.timestamp) {
+                    return(NSComparisonResult)NSOrderedAscending;
+                }else {
+                    return(NSComparisonResult)NSOrderedDescending;
+                }
+            }];
+
+    NSMutableArray *sotedChatlist = [[NSMutableArray alloc] initWithArray:sorte];
+
     NSMutableArray *ret = [NSMutableArray array];
-    for(int i=0; i<chatList.count; i++){
+    for(int i=0; i< sotedChatlist.count; i++){
         NSMutableDictionary *retGroup = [NSMutableDictionary dictionaryWithCapacity:10];
-        EMConversation *temp = chatList[i];
+        EMConversation *temp = sotedChatlist[i];
         //todo 格式待定
         //会话对方的用户名. 如果是群聊, 则是群组的id
         retGroup[@"chatter"] = temp.chatter;
@@ -417,14 +447,14 @@
     }
     //基本属性
     resultMessage[@"chatType"] = type;
-    if ([type isEqualToString:@"Chat"]) {
+//    if ([type isEqualToString:@"Chat"]) {
         resultMessage[@"to"] = tempMessage.to;
         resultMessage[@"from"] = tempMessage.from;
-    }
-    else {
-        resultMessage[@"to"] = tempMessage.from;
-        resultMessage[@"from"] = tempMessage.groupSenderName;
-    }
+//    }
+//    else {
+//        resultMessage[@"to"] = tempMessage.from;
+//        resultMessage[@"from"] = tempMessage.groupSenderName;
+//    }
     resultMessage[@"msgId"] = tempMessage.messageId;
     resultMessage[@"msgTime"] = @(tempMessage.timestamp);
     resultMessage[@"unRead"] = @(!tempMessage.isRead);
