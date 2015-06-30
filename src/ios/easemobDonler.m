@@ -52,14 +52,6 @@
          }
      } onQueue:nil];
 
-  
-  //NSMutableDictionary *resultDic = [NSMutableDictionary dictionaryWithCapacity: 10];
-  //[resultDic setObject:username forKey:@"name"];
-  //[resultDic setObject:password forKey:@"password"];
-  //NSArray* resultArray = @[resultDic, resultDic];
-
-  //CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary: resultArray];
-  //[self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void) logout:(CDVInvokedUrlCommand *)command
@@ -90,6 +82,7 @@
     EMMessageType messageType = [self convertToMessageType:chatType];
     EMMessage *tempMessage;
     NSString *contentType = args[@"contentType"];
+    NSDictionary *ext = args[@"ext"] ? args[@"ext"]: nil;
     if([contentType isEqualToString:@"TXT"])
     {
         NSString *text = content[@"text"];
@@ -97,7 +90,7 @@
                                                      toUsername:target
                                                     messageType:messageType
                                               requireEncryption:NO
-                                                            ext:nil];
+                                                            ext:ext];
     }
     else if([contentType isEqualToString:@"IMAGE"])
     {
@@ -113,7 +106,7 @@
                                                      toUsername:target
                                                     messageType:messageType
                                               requireEncryption:NO
-                                                            ext:nil];
+                                                            ext:ext];
     }
     else if([contentType isEqualToString:@"VOICE"])
     {
@@ -124,11 +117,7 @@
                                                      toUsername:target
                                                     messageType:messageType
                                               requireEncryption:NO
-                                                            ext:nil];
-    }
-    else
-    {
-
+                                                            ext:ext];
     }
     NSMutableDictionary *resultMessage = [self formatMessage:tempMessage];
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary: resultMessage];
@@ -227,7 +216,8 @@
 /**
 * 收到离线消息
 */
-- (void)didFinishedReceiveOfflineMessages:(NSArray *)offlineMessages{
+- (void)didFinishedReceiveOfflineMessages:(NSArray *)offlineMessages
+{
     NSLog (@"%@", offlineMessages);
     NSMutableArray *resultMessages = [self formatMessages:offlineMessages];
     NSError  *error;
