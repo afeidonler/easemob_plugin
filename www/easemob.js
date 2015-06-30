@@ -50,7 +50,7 @@ Easemob.prototype.logout = function(success,error) {
  * @param  {Function} success 成功回调函数：聊天信息
  * @param  {Function} error   失败回调函数:聊天信息
  * @param  {Array} params     [{chatType,target,contentType,content,extend}]
- *                              chatType:消息类型，single(默认),group
+ *                              chatType:消息类型,single(默认),group
                                 target:目标用户的用户名或群的id
                                 contentType:消息内容的类型：TXT，VOICE，IMAGE（LOCATION，FILE。。未实现）
                                 content 消息内容
@@ -124,7 +124,7 @@ Easemob.prototype.resetUnreadMsgCount = function(success,error,params) {
  * @param  {Function} success 成功回调函数
  * @param  {Function} error   失败回调函数
  * @param  {Array} params  [chatType, target]
- *                             chatType:消息类型，single(默认),group
+ *                             chatType:消息类型,single(默认),group
                                target:目标用户的用户名或群的id
  * @return {[type]}         [description]
  */
@@ -136,7 +136,7 @@ Easemob.prototype.clearConversations = function(success,error,params) {
  * @param  {Function} success 成功回调函数
  * @param  {Function} error   失败回调函数
  * @param  {Array} params  [chatType, target]
- *                             chatType:消息类型，single(默认),group
+ *                             chatType:消息类型,single(默认),group
                                target:目标用户的用户名或群的id
  * @return {[type]}         [description]
  */
@@ -148,13 +148,26 @@ Easemob.prototype.deleteConversation = function(success,error,params) {
  * @param  {Function} success 成功回调函数
  * @param  {Function} error   失败回调函数
  * @param  {Array} params  [chatType, target,msgId]
- *                             chatType:消息类型，single(默认),group
+ *                             chatType:消息类型,single(默认),group
                                target:目标用户的用户名或群的id
                                msgId:该消息的id
  * @return {[type]}         [description]
  */
 Easemob.prototype.deleteMessage = function(success,error,params) {
     cordova.exec(success,error,'Easemob','deleteMessage',params);
+};
+/**
+ * 获取会话中的某条聊天的附件
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @param  {Array} params  [chatType, target, msgId]
+ *                             chatType:消息类型,single(默认),group
+                               target:目标用户的用户名或群的id
+                               msgId:该消息的id
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.downloadMessage = function(success,error,params) {
+    cordova.exec(success,error,'Easemob','downloadMessage',params);
 };
 //删除所有会话记录（比较恐怖，还是不加了吧）
 // Easemob.prototype.deleteAllConversation = function(success,error,params) {
