@@ -11,7 +11,7 @@
 
 - (void) init:(CDVInvokedUrlCommand *)command
 {
-    [[EaseMob sharedInstance] registerSDKWithAppKey:@"maggie03230#maggieapp"
+    [[EaseMob sharedInstance] registerSDKWithAppKey:@"donler#donlerapp"
                                        apnsCertName:@"55yali"
                                         otherConfig:@{kSDKConfigEnableConsoleLogger:[NSNumber numberWithBool:YES]}];
 
