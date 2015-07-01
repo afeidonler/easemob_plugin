@@ -6,6 +6,7 @@
 @interface easemobDonler()<IChatManagerDelegate>{
 
 }
+@property NSString *currentUser;
 @end
 @implementation easemobDonler;
 
@@ -38,6 +39,7 @@
              //获取群组列表
              // [[EaseMob sharedInstance].chatManager asyncFetchMyGroupsList];
              
+             self.currentUser = username;
              //设置是否自动登录 
              [[EaseMob sharedInstance].chatManager setIsAutoLoginEnabled:YES];
 
@@ -489,7 +491,7 @@
     }
     //基本属性
     resultMessage[@"chatType"] = type;
-    if ([type isEqualToString:@"Chat"] || tempMessage.deliveryState==eMessageDeliveryState_Delivering) {
+    if ([type isEqualToString:@"Chat"] || [tempMessage.from isEqualToString:self.currentUser]) {
         resultMessage[@"to"] = tempMessage.to;
         resultMessage[@"from"] = tempMessage.from;
     }
