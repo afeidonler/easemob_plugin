@@ -260,6 +260,21 @@ Easemob.prototype.onClickNotification = function (chat) {
 Easemob.prototype.onRecord = function (msg) {
 }
 /**
+ * 开始播放语音
+ * @param  {[type]} url 录音文件地址
+ */
+Easemob.prototype.playRecord = function (success, error, url) {
+    cordova.exec(success,error,'Easemob','playRecord',[url]);
+}
+
+/**
+ * 停止播放语音
+ * @param  {String} url 录音文件地址
+ */
+Easemob.prototype.stopPlayRecord = function () {
+    cordova.exec(success,error,'Easemob','stopPlayRecord');
+}
+/**
  * 断开连接的函数
  * @param  {String} error 错误信息：user_removed,connecttion_conflict,server_disconnect,no_network
  * @return {[type]}      [description]

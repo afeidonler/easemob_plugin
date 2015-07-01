@@ -191,6 +191,35 @@
 }
 
 /**
+* 播放
+*/
+- (void) playRecord: (CDVInvokedUrlCommand *)command
+{
+    NSString *path = command.arguments[0];
+    [[EMCDDeviceManager sharedInstance] asyncPlayingWithPath:path
+                                                  completion:^(NSError *error) {
+        if(!error) {
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        }
+        else{
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        }
+    }];
+}
+
+/**
+* 停止播放
+*/
+- (void) stopPlayRecord: (CDVInvokedUrlCommand *)command
+{
+    [[EMCDDeviceManager sharedInstance] stopPlaying];
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+/**
 * 收到在线消息
 */
 - (void)didReceiveMessage:(EMMessage *)message

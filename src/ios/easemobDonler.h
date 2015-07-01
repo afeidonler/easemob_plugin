@@ -23,6 +23,10 @@
 
 - (void) recordcancel: (CDVInvokedUrlCommand *)command;
 
+- (void) playRecord: (CDVInvokedUrlCommand *)command;
+
+- (void) stopPlayRecord: (CDVInvokedUrlCommand *)command;
+
 - (void) getAllConversations: (CDVInvokedUrlCommand *)command;
 
 - (void) getMessages: (CDVInvokedUrlCommand *)command;
