@@ -91,8 +91,8 @@ Easemob.prototype.recordEnd = function(success,error,params) {
  * @param  {Function} error   失败回调函数：聊天信息
  * @return {[type]}         [description]
  */
-Easemob.prototype.recordCancel = function(success,error) {
-    cordova.exec(success,error,'Easemob','recordcancel',params);
+Easemob.prototype.recordCancel = function() {
+    cordova.exec(null,null,'Easemob','recordcancel',[]);
 };
 /**
  * 获取聊天记录
