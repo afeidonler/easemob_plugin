@@ -261,10 +261,15 @@ Easemob.prototype.onRecord = function (msg) {
 }
 /**
  * 开始播放语音
- * @param  {[type]} url 录音文件地址
+ * @param  {array} params : [{
+ *                            chatType: String (single, group),
+ *                            target:String, //目标用户的用户名或群的id
+ *                            msgId: String, //消息的id
+ *                            path:String
+ *                          }] 录音文件地址
  */
-Easemob.prototype.playRecord = function (success, error, url) {
-    cordova.exec(success,error,'Easemob','playRecord',[url]);
+Easemob.prototype.playRecord = function (success, error, params) {
+    cordova.exec(success,error,'Easemob', 'playRecord', params);
 }
 
 /**

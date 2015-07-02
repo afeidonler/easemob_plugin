@@ -197,7 +197,9 @@
 */
 - (void) playRecord: (CDVInvokedUrlCommand *)command
 {
-    NSString *path = command.arguments[0];
+    NSDictionary *args = command.arguments[0];
+
+    NSString *path = args[@"path"];
     [[EMCDDeviceManager sharedInstance] asyncPlayingWithPath:path
                                                   completion:^(NSError *error) {
         if(!error) {
@@ -209,6 +211,25 @@
             [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
         }
     }];
+
+    //以下是更新message的ext属性，标为已听过.
+    NSString *chatType = args[@"chatType"];
+
+    EMMessageType messageType = [self convertToMessageType:chatType];
+    NSString *chatter = args[@"target"];
+    EMConversation *conversation = [[EaseMob sharedInstance].chatManager conversationForChatter:chatter conversationType:messageType];
+    NSString *msgId = args[@"msgId"];
+    EMMessage *message = [conversation loadMessageWithId:msgId];
+    
+    if(!message.ext) {
+        message.ext = [NSMutableDictionary dictionary];
+    }
+    NSMutableDictionary *dict = [message.ext mutableCopy];
+    if (![dict[@"isPlayed"] boolValue]) {
+        [dict setObject:@YES forKey:@"isPlayed"];
+        message.ext = dict;
+        [message updateMessageExtToDB];
+    }
 }
 
 /**
@@ -220,7 +241,6 @@
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
-
 /**
 * 收到在线消息
 */
@@ -502,14 +522,12 @@
     resultMessage[@"msgId"] = tempMessage.messageId;
     resultMessage[@"msgTime"] = @(tempMessage.timestamp);
     resultMessage[@"unRead"] = @(!tempMessage.isRead);
-    //isListened 未找到
     id status = [self formatState:tempMessage.deliveryState];
     resultMessage[@"status"] = status;
     NSNumber *isAcked = @(!tempMessage.isReadAcked);
     resultMessage[@"isAcked"] = isAcked;
     //progress 无
-    tempMessage.ext ? resultMessage[@"ext"] = tempMessage.ext : nil;
-
+    tempMessage.ext ? resultMessage[@"ext"] = [tempMessage.ext mutableCopy] : nil;
     //body
     id<IEMMessageBody> msgBody = tempMessage.messageBodies.firstObject;
     resultMessage[@"type"] = [self formatType:msgBody.messageBodyType];
@@ -543,10 +561,10 @@
 
             //小图的H
             NSNumber *thumbnailHeight = @(body.thumbnailSize.height);
-            messageBody[@"height"] = thumbnailHeight;
+            messageBody[@"thumbnailHeight"] = thumbnailHeight;
             //小图的W
             NSNumber *thumbnailWidth = @(body.thumbnailSize.width);
-            messageBody[@"width"] = thumbnailWidth;
+            messageBody[@"thumbnailWidth"] = thumbnailWidth;
             //NSLog(@"小图的下载状态 -- %lu",body.thumbnailDownloadStatus);
         };
         break;
@@ -565,6 +583,11 @@
             //NSLog(@"音频文件大小 -- %lld"       ,body.fileLength);
             //NSLog(@"音频文件的下载状态 -- %lu"   ,body.attachmentDownloadStatus);
             //NSLog(@"音频的时间长度 -- %lu"      ,body.duration);
+            if(resultMessage[@"ext"]) {
+                messageBody[@"isListened"] = [resultMessage[@"ext"] objectForKey:@"isPlayed"];
+            }else {
+                messageBody[@"isListened"] = @NO;
+            }
         };
     }
     messageBody ? resultMessage[@"body"] = messageBody : nil;
