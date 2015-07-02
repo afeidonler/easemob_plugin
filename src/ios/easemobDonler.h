@@ -37,4 +37,6 @@
 - (void) deleteMessage: (CDVInvokedUrlCommand *)command;
 
 - (void) downloadMessage: (CDVInvokedUrlCommand *)command;
+
+- (void) downloadThumbnail: (CDVInvokedUrlCommand *)command;
 @end

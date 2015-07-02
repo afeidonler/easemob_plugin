@@ -169,6 +169,19 @@ Easemob.prototype.deleteMessage = function(success,error,params) {
 Easemob.prototype.downloadMessage = function(success,error,params) {
     cordova.exec(success,error,'Easemob','downloadMessage',params);
 };
+/**
+ * 获取会话中的某条聊天的缩略图
+ * @param  {Function} success 成功回调函数
+ * @param  {Function} error   失败回调函数
+ * @param  {Array} params  [chatType, target, msgId]
+ *                             chatType:消息类型,single(默认),group
+                               target:目标用户的用户名或群的id
+                               msgId:该消息的id
+ * @return {[type]}         [description]
+ */
+Easemob.prototype.downloadThumbnail = function(success,error,params) {
+    cordova.exec(success,error,'Easemob','downloadThumbnail',params);
+};
 //删除所有会话记录（比较恐怖，还是不加了吧）
 // Easemob.prototype.deleteAllConversation = function(success,error,params) {
 //     cordova.exec(success,error,'Easemob','deleteAllConversation',params);

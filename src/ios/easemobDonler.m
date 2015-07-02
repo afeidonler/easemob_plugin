@@ -116,10 +116,10 @@
         EMChatVoice *voice = [[EMChatVoice alloc] initWithFile:recordPath
                                                    displayName:@"audio"];
         tempMessage = [ChatSendHelper sendVoice:voice
-                                                     toUsername:target
-                                                    messageType:messageType
-                                              requireEncryption:NO
-                                                            ext:ext];
+                                     toUsername:target
+                                    messageType:messageType
+                              requireEncryption:NO
+                                            ext:ext];
     }
     NSMutableDictionary *resultMessage = [self formatMessage:tempMessage];
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary: resultMessage];
@@ -247,9 +247,26 @@
 - (void)didReceiveMessage:(EMMessage *)message
 {
     NSLog (@"%@", message);
+    id<IEMMessageBody> msgBody = message.messageBodies.firstObject;
+    //如果是语音、图片，等下载完缩略图或语音后再发到前台，以免听不到。
+    if(msgBody.messageBodyType != eMessageBodyType_Image && msgBody.messageBodyType != eMessageBodyType_Voice){
+        NSMutableDictionary *resultMessage = [self formatMessage:message];
+        NSError  *error;
+        NSData   *jsonData   = [NSJSONSerialization dataWithJSONObject:resultMessage options:0 error:&error];
+        NSString *jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
+        [self.commandDelegate evalJs:[NSString stringWithFormat:@"window.easemob.onReciveMessage(%@)",jsonString]];
+    }
+}
+
+/**
+* SDK接收到消息时, 下载附件成功或失败的回调
+*/
+- (void)didMessageAttachmentsStatusChanged :(EMMessage *)message error:(EMError *)error
+{
     NSMutableDictionary *resultMessage = [self formatMessage:message];
-    NSError  *error;
-    NSData   *jsonData   = [NSJSONSerialization dataWithJSONObject:resultMessage options:0 error:&error];
+    //如果出错也返回，等到下载大图时判断小图是否未下载如果未下载去下载小图
+    NSError  *jerror;
+    NSData   *jsonData   = [NSJSONSerialization dataWithJSONObject:resultMessage options:0 error:&jerror];
     NSString *jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
     [self.commandDelegate evalJs:[NSString stringWithFormat:@"window.easemob.onReciveMessage(%@)",jsonString]];
 }
@@ -261,7 +278,7 @@
     NSError  *error;
     NSData   *jsonData   = [NSJSONSerialization dataWithJSONObject:resultMessage options:0 error:&error];
     NSString *jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
-    [self.commandDelegate evalJs:[NSString stringWithFormat:@"window.easemob.onReciveMessage(%@)",jsonString]];
+    [self.commandDelegate evalJs:[NSString stringWithFormat:@"window.easemob.onReciveCmdMessage(%@)",jsonString]];
 }
 
 /**
@@ -396,6 +413,25 @@
         }
     }onQueue:nil];
 }
+
+/**
+* 下载小图接口
+*/
+- (void) downloadThumbnail: (CDVInvokedUrlCommand *)command
+{
+    NSString *chatType = command.arguments[0];
+    EMMessageType messageType = [self convertToMessageType:chatType];
+    NSString *chatter = command.arguments[1];
+    EMConversation *conversation = [[EaseMob sharedInstance].chatManager conversationForChatter:chatter conversationType:messageType];
+    NSString *msgId = command.arguments[2];
+    EMMessage *message = [conversation loadMessageWithId:msgId];
+    [[EaseMob sharedInstance].chatManager asyncFetchMessageThumbnail:message progress:nil completion:^(EMMessage *aMessage, EMError *error) {
+        NSMutableDictionary *resultMessage = [self formatMessage:aMessage];
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary: resultMessage];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }onQueue:nil];
+}
+
 
 /**
 * 字符串转换为EMMessageType
